@@ -1,0 +1,86 @@
+﻿using UnityEngine;
+using System.Collections;
+using System;
+
+public class CameraController : MonoBehaviour
+{
+    public float smooth = 3.0f;
+    public Map map;
+    public Transform player;
+
+    internal Vector3 cursorPosInWorld = Vector3.zero;
+    internal Vector2 viewDistance = Vector2.zero;
+    public void setCameraHeight(float y)
+    {
+        transform.position = new Vector3(transform.position.x, y, transform.position.z);
+        Vector3 p = thisCamera.ViewportToWorldPoint(new Vector3(1, 1, y));
+
+        float distByZ = p.z - transform.position.z;
+        float distByX = p.x - transform.position.x;
+        viewDistance = new Vector2(distByX, distByZ);
+    }
+
+    private Camera thisCamera;
+    void Start()
+    {
+        thisCamera = GetComponent<Camera>();
+        setCameraHeight(transform.position.y);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        updateWorldCursorPosCoords();
+
+        if ((player == null) || (transform.rotation.eulerAngles.x == 0))
+            return;
+        float camHeight = transform.position.y;
+
+        //map bounds
+        float restrictX = map.mapWidth / 2f - viewDistance.x + 1;
+        float restrictZ = map.mapHeight / 2f - viewDistance.y + 1;
+
+        Vector3 boundedCursor = new Vector3(
+          Mathf.Clamp(cursorPosInWorld.x, Math.Max(-restrictX, player.position.x - viewDistance.x - 1), 
+            Math.Min(restrictX, player.position.x + viewDistance.x + 1)),
+          camHeight,
+          Mathf.Clamp(cursorPosInWorld.z, Math.Max(-restrictZ, player.position.z - viewDistance.y), 
+            Math.Min(restrictZ, player.position.z + viewDistance.y))
+        );
+
+
+        Vector3 newPos = Vector3.Lerp(new Vector3(player.position.x, camHeight, player.position.z), boundedCursor, 0.5f);
+
+
+        newPos = Vector3.Lerp(transform.position, newPos, smooth * Time.deltaTime);
+
+        transform.position = newPos;
+        //transform.position = new Vector3(player.position.x, camHeight, player.position.z);
+    }
+
+    private void updateWorldCursorPosCoords()
+    {
+        Vector2 cursorPosition = Input.mousePosition; //screen coords
+        //http://wiki.unity3d.com/index.php?title=LookAtMouse
+        // Generate a plane that intersects the transform's position with an upwards normal.
+        Plane playerPlane = new Plane(new Vector3(0, 1, 0), player.position);
+
+        // Generate a ray from the cursor position
+        Ray ray = thisCamera.ScreenPointToRay(cursorPosition);
+        
+        Debug.DrawRay(ray.origin, ray.direction * 20, Color.yellow);
+
+        // Determine the point where the cursor ray intersects the plane.
+        // This will be the point that the object must look towards to be looking at the mouse.
+        // Raycasting to a Plane object only gives us a distance, so we'll have to take the distance,
+        //   then find the point along that ray that meets that distance.  This will be the point
+        //   to look at.
+        float hitdist = 0.0f;
+        // If the ray is parallel to the plane, Raycast will return false.
+        if (playerPlane.Raycast(ray, out hitdist))
+        {
+            // Get the point along the ray that hits the calculated distance.
+            cursorPosInWorld = ray.GetPoint(hitdist);
+        }
+    }
+}
