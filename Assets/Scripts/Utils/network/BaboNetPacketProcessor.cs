@@ -282,15 +282,10 @@ namespace BaboNetwork
 
 		private void doPlaySound(net_svcl_play_sound parsedPacket)
 		{
-			throw new NotImplementedException();
+			//TODO: sounds
 		}
 
 		private void doAutoBalance()
-		{
-			throw new NotImplementedException();
-		}
-
-		private void doDeleteProjectile(net_svcl_delete_projectile parsedPacket)
 		{
 			throw new NotImplementedException();
 		}
@@ -541,11 +536,6 @@ namespace BaboNetwork
 			//throw new NotImplementedException();
 		}
 
-		private void doProjectileCoordFrame(net_svcl_projectile_coord_frame parsedPacket)
-		{
-			//throw new NotImplementedException();
-		}
-
 		private void doHashSeed(net_svcl_hash_seed parsedPacket)
 		{
 			// we receive an hash seed, we need to send a response back
@@ -568,7 +558,38 @@ namespace BaboNetwork
 
 		private void doPlayerProjectile(net_clsv_svcl_player_projectile parsedPacket)
 		{
-			//throw new NotImplementedException();
+			PlayerState ps;
+			if (!gameState.players.TryGetValue (parsedPacket.playerID, out ps))
+				return;
+			if (gameState.thisPlayer.playerState == ps)
+			{
+				
+			}
+			ProjectileState projectile = new ProjectileState ();
+			projectile.nuzzleID = parsedPacket.nuzzleID;
+			projectile.playerID = parsedPacket.playerID;
+			projectile.position = BaboUtils.vectorFromArray (parsedPacket.position);
+			projectile.typeID = (BaboProjectileType)parsedPacket.projectileType;
+			projectile.uniqueID = parsedPacket.uniqueID;
+			projectile.vel = BaboUtils.vectorFromArray (parsedPacket.vel);
+			projectile.weaponID = (BaboMainWeapon)parsedPacket.weaponID;
+			gameState.projectiles.Add (parsedPacket.uniqueID, projectile);
+		}
+
+		private void doProjectileCoordFrame(net_svcl_projectile_coord_frame parsedPacket)
+		{
+			ProjectileState ps;
+			if (!gameState.projectiles.TryGetValue (parsedPacket.uniqueID, out ps))
+				return;
+			ps.coordFrame.frameID = parsedPacket.frameID;
+			ps.coordFrame.position = BaboUtils.vectorFromArray (parsedPacket.position);
+			ps.coordFrame.vel = BaboUtils.vectorFromArray (parsedPacket.vel);
+		}
+
+		private void doDeleteProjectile(net_svcl_delete_projectile parsedPacket)
+		{
+			if (gameState.projectiles.ContainsKey (parsedPacket.projectileID))
+				gameState.projectiles.Remove (parsedPacket.projectileID);
 		}
 
 		private void doPlayerCoordFrame(net_clsv_svcl_player_coord_frame parsedPacket)
@@ -627,10 +648,7 @@ namespace BaboNetwork
 			{
 				gameState.serverFrameID = parsedPacket.frameID;
 				gameState.gameTimeLeft = parsedPacket.gameTimeLeft;
-				int gtl = (int)parsedPacket.gameTimeLeft + 1;
-                int rtl = (int)parsedPacket.roundTimeLeft + 1;
-                gameState.hud.gameTimer.text = String.Format("{0:d2}:{1:d2}", gtl / 60, gtl % 60);
-                gameState.hud.roundTimer.text = String.Format("{0:d2}:{1:d2}", rtl / 60, rtl % 60);
+				gameState.roundTimeLeft = parsedPacket.roundTimeLeft;
             }
 		}
 	}

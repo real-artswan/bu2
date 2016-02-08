@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+using UnityEngine;
 
 public static class BaboUtils
 {
@@ -32,6 +33,14 @@ public static class BaboUtils
 			res += mac[i].ToString("x") + "-";
 		res += mac[8].ToString("x");
 		return res;
+	}
+
+	public static Vector3 vectorFromArray(short[] array) {
+		return new Vector3 (array [0], array [1], array [2]);
+	}
+
+	public static Vector3 vectorFromArray(byte[] array) {
+		return new Vector3 (array [0], array [1], array [2]);
 	}
 
 }

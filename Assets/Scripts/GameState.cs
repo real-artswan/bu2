@@ -16,7 +16,9 @@ public class GameState: MonoBehaviour
 	public PlayerController thisPlayer;
 
 	internal Dictionary<byte, PlayerState> players = new Dictionary<byte, PlayerState>();
+	internal Dictionary<int, ProjectileState> projectiles = new Dictionary<int, ProjectileState>();
     internal float gameTimeLeft;
+	internal float roundTimeLeft;
     //internal float roundTimeLeft;
     internal List<string> chatMessages = new List<string>();
     internal List<string> eventMessages = new List<string>();
@@ -60,6 +62,15 @@ public class GameState: MonoBehaviour
 	void Start() {
         serverFrameID = 0;
     }
+
+	void Update() {
+		if (gameVars.showPing && (thisPlayer.playerState != null))
+			hud.pingGraph.setPing (thisPlayer.playerState.ping);
+		int gtl = (int)gameTimeLeft + 1;
+		int rtl = (int)roundTimeLeft + 1;
+		hud.gameTimer.text = String.Format("{0:d2}:{1:d2}", gtl / 60, gtl % 60);
+		hud.roundTimer.text = String.Format("{0:d2}:{1:d2}", rtl / 60, rtl % 60);
+	}
 
 	void FixedUpdate() {
         if (needToShutDown)

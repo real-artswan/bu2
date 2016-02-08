@@ -16,7 +16,7 @@ public class CanvasHUD : MonoBehaviour {
 	public Slider health;
 	public Slider heatWpn;
 	public GameObject fpsCounter;
-	public GameObject pingGraph;
+	public PingGraph pingGraph;
 
 	private void setFlagsActive(bool active)
 	{
@@ -27,7 +27,7 @@ public class CanvasHUD : MonoBehaviour {
 		//game settings depending
 		roundTimer.gameObject.SetActive(false);
 		fpsCounter.SetActive(gameVariables.showFPS);
-		pingGraph.SetActive(gameVariables.showPing);
+		pingGraph.gameObject.SetActive(gameVariables.showPing);
 		//game state depending
 		if (centerMessage.text == "")
 			centerMessage.gameObject.SetActive(false);

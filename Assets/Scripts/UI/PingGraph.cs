@@ -1,73 +1,65 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using System;
 
 public class PingGraph : MonoBehaviour {
-
-    public Texture2D blankTexture;
-    public Color backgroundColor = Color.black;
-    public Color drawColor = Color.green;
-
-    private Color[] backColors = new Color[1];
+	public Color drawColor = new Color(0, 1, 0, 128);
+	public int maxValue = 300;
 
     private float yScale = 0;
-    private int maxValue = 100;
-
-    private RawImage r;
-    private RectTransform rt;
     private int[] data;
-    private int curDataInd = 0;
+	private Texture2D texture;
+	private Color[] cleanLine;
+	private Color[] filledLine;
 
     internal void setPing(int ping)
     {
-        data[curDataInd] = ping;
-        if (maxValue < ping)
-            maxValue = ping;
-        curDataInd++;
-        if (curDataInd == data.Length)
-            curDataInd = 0;
+		if (data == null)
+			return;
+		Array.Copy (data, 0, data, 1, data.Length - 1);
+        if (ping > maxValue)
+			data[0] = maxValue;
+		else
+			data[0] = ping;
     }
 
     void Start () {
-        r = GetComponent<RawImage>();
-        rt = GetComponent<RectTransform>();
-        backColors = new Color[blankTexture.width * blankTexture.height];
-        for (int i = 0; i < backColors.Length; i++)
-            backColors[i] = backgroundColor;
+		//texture to draw on
+		RectTransform rt = GetComponent<RectTransform>();
+		RawImage img = GetComponent<RawImage> ();
+		texture = new Texture2D((int)rt.rect.width, (int)rt.rect.height, TextureFormat.ARGB32, false);
+		Material mat = new Material (img.material);
+		mat.mainTexture = texture;
+		img.material = mat;
 
-        blankTexture.SetPixels(backColors);
-        blankTexture.Apply();
-        r.material.mainTexture = blankTexture;
-
-        data = new int[(int)rt.rect.width];
+		data = new int[texture.width];
+		yScale = texture.height / (float)maxValue;
+		//colors caches for performance reason
+		cleanLine = new Color[texture.height];
+		filledLine = new Color[texture.height];
+		for (int i = 0; i < texture.height; i++) {
+			cleanLine [i] = img.material.color;
+			filledLine [i] = drawColor;
+		}
     }
 	
     void Update () {
-        setPing(Random.Range(0, 300));
-        updateScale();
+        //setPing(UnityEngine.Random.Range(0, 300));
         drawData();
 	}
 
-    private void updateScale()
-    {
-        yScale = rt.rect.height / (float)maxValue;
-    }
-
     private void drawData()
     {
-        Color[] drawColors = new Color[(int)rt.rect.height];
-        for (int i = 0; i < rt.rect.width; i++)
+		Color[] drawLine = new Color[texture.height];
+		for (int i = 0; i < texture.width; i++)
         {
-            for (int j = 0; j < rt.rect.height; j++)
-                if (j < data[i] * yScale)
-                    drawColors[j] = drawColor;
-                else
-                    drawColors[j] = backgroundColor;
+			Array.Copy (cleanLine, drawLine, drawLine.Length);
+			Array.Copy (filledLine, 0, drawLine, 0, (int)(data[i] * yScale));
 
-            blankTexture.SetPixels(i, 0, 1, (int)(data[i] * yScale), drawColors);
+			texture.SetPixels(i, 0, 1, drawLine.Length, drawLine);
         }
-        blankTexture.Apply();
-        r.material.mainTexture = blankTexture;
+        texture.Apply(false);
     }
 
 }
