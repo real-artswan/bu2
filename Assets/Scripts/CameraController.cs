@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using UnityStandardAssets.CrossPlatformInput;
 
 public class CameraController : MonoBehaviour
 {
@@ -9,7 +10,7 @@ public class CameraController : MonoBehaviour
     public Transform player;
 
     internal Vector3 cursorPosInWorld = Vector3.zero;
-    internal Vector2 viewDistance = Vector2.zero;
+    private Vector2 viewDistance = Vector2.zero;
     public void setCameraHeight(float y)
     {
         transform.position = new Vector3(transform.position.x, y, transform.position.z);
@@ -60,7 +61,11 @@ public class CameraController : MonoBehaviour
 
     private void updateWorldCursorPosCoords()
     {
-        Vector2 cursorPosition = Input.mousePosition; //screen coords
+        Vector2 cursorPosition = new Vector2(
+            CrossPlatformInputManager.mousePosition.x,
+            CrossPlatformInputManager.mousePosition.y
+        );
+        //Vector2 cursorPosition = Input.mousePosition; //screen coords
         //http://wiki.unity3d.com/index.php?title=LookAtMouse
         // Generate a plane that intersects the transform's position with an upwards normal.
         Plane playerPlane = new Plane(new Vector3(0, 1, 0), player.position);

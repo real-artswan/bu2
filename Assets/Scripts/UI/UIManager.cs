@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using System;
+using UnityStandardAssets.CrossPlatformInput;
 
 public class UIManager : MonoBehaviour {
 
@@ -11,11 +13,37 @@ public class UIManager : MonoBehaviour {
     public Text gameMenuInfo;
     public NetConnection connection;
     public GameObject resumeButton;
+    public GameState gameState;
+    public GameObject mainWeapons;
 
     void Start()
     {
         Cursor.visible = true;
         resumeButton.SetActive(connection.connected);
+    }
+
+    void Update()
+    {
+        if (!mainMenu.activeSelf && CrossPlatformInputManager.GetButton("Cancel"))
+        {
+            if (gameMenu.activeSelf)
+                hideMenus();
+            else
+                showGameMenu();
+        }
+    }
+
+    public void setMainWeapon(Toggle sender)
+    {
+        if (sender.isOn)
+            gameState.nextWeapon = (BaboMainWeapon)Enum.Parse(typeof(BaboMainWeapon), sender.name);
+    }
+
+    public void askAssignTeam(Button sender)
+    {
+        BaboPlayerTeamID team = (BaboPlayerTeamID)Enum.Parse(typeof(BaboPlayerTeamID), sender.name);
+        gameState.assignTeam(team);
+        hideMenus();
     }
 
     public void showMainMenu()
@@ -31,6 +59,11 @@ public class UIManager : MonoBehaviour {
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         HUD.SetActive(true);
         gameMenu.SetActive(true);
+        Transform wToggle = mainWeapons.transform.FindChild(gameState.nextWeapon.ToString());
+        if (wToggle != null)
+        {
+            wToggle.gameObject.GetComponent<Toggle>().isOn = true;
+        }
         mainMenu.SetActive(false);
     }
 

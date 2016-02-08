@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class CanvasHUD : MonoBehaviour {
 	public GlobalGameVariables gameVariables;
 	public GameState gameState;
+	public Text gameTimer;
 	public Text roundTimer;
 	public Text blueTeamScore;
 	public Text redTeamScore;
@@ -17,8 +18,14 @@ public class CanvasHUD : MonoBehaviour {
 	public GameObject fpsCounter;
 	public GameObject pingGraph;
 
+	private void setFlagsActive(bool active)
+	{
+		blueTeamScore.gameObject.transform.parent.parent.gameObject.SetActive(active);
+	}
+
 	public void updateHudElementsVisibility(){
 		//game settings depending
+		roundTimer.gameObject.SetActive(false);
 		fpsCounter.SetActive(gameVariables.showFPS);
 		pingGraph.SetActive(gameVariables.showPing);
 		//game state depending
@@ -27,17 +34,15 @@ public class CanvasHUD : MonoBehaviour {
 		switch (gameState.getGameType()) {
 			case BaboGameType.GAME_TYPE_DM:
 				topCounter.gameObject.SetActive(
-                    (gameState.thisPlayer.playerState != null) &&
-                    (gameState.thisPlayer.playerState.teamID != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR));
-				blueTeamScore.gameObject.SetActive(false);
-				redTeamScore.gameObject.SetActive(false);
+					(gameState.thisPlayer.playerState != null) &&
+					(gameState.thisPlayer.playerState.teamID != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR));
+				setFlagsActive(false);
 				break;
 			case BaboGameType.GAME_TYPE_TDM:
 			case BaboGameType.GAME_TYPE_CTF:
 			case BaboGameType.GAME_TYPE_SND:
 				topCounter.gameObject.SetActive(false);
-				blueTeamScore.gameObject.SetActive(true);
-				redTeamScore.gameObject.SetActive(true);
+				setFlagsActive(true);
 				break;
 		}
 		if ((gameState.thisPlayer.playerState != null) && (gameState.thisPlayer.playerState.teamID != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)) {

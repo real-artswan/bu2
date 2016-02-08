@@ -4,6 +4,7 @@ using System.Collections;
 public class BaboFlagsState
 {
 	public enum FlagState {
+        INITIAL = -2,
 		DROP = -1
 	}
 	public Vector3 redPos;
@@ -37,8 +38,9 @@ public enum BaboMainWeapon
 	WEAPON_CHAIN_GUN,
 	WEAPON_BAZOOKA,
 	WEAPON_PHOTON_RIFLE,
-	    
-};
+    WEAPON_FLAME_THROWER
+}
+
 public enum BaboSecondaryWeapon {KNIVES, SHIELD, NUKE, MINIBOT};
 public enum BaboGameType { GAME_TYPE_DM, GAME_TYPE_TDM, GAME_TYPE_CTF, GAME_TYPE_SND };
 

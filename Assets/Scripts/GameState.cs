@@ -31,39 +31,47 @@ public class GameState: MonoBehaviour
 	}
 	internal bool needToShutDown = false;
 	internal BaboRoundState roundState = BaboRoundState.GAME_DONT_SHOW;
+    internal BaboMainWeapon nextWeapon = BaboMainWeapon.WEAPON_SMG;
+    internal int serverFrameID = 0;
 
-	internal void setGameType(BaboGameType gameType) {
+    internal void setGameType(BaboGameType gameType) {
 		_gameType = gameType;
-		hud.updateHudElementsVisibility();
+
+        serverFrameID = 0;
+
+        hud.updateHudElementsVisibility();
+        map.flagsState.redState = BaboFlagsState.FlagState.INITIAL;
+        map.flagsState.blueState = BaboFlagsState.FlagState.INITIAL;
+        
+        List<byte> keys = new List<byte>(players.Keys);
+        foreach (byte id in keys)
+        {
+            if ((thisPlayer.playerState != null) && (thisPlayer.playerState.playerID == id))
+            {
+                players[id] = new PlayerState(id);
+                thisPlayer.playerState = players[id];
+            }
+            else
+                players[id] = new PlayerState(id);
+        }
 	}
 
-	BaboNetPacketProcessor packetsProcessor;
-	private void addPacketToSend(BaboRawPacket packet) {
-        //Debug.Log(DateTime.Now.ToString() + "->" + ((BaboPacketTypeID)packet.typeID).ToString());
-		connection.packetsToSend.Enqueue(packet);
-	}
-
+	
 	void Start() {
-		packetsProcessor = new BaboNetPacketProcessor(this, new AddPacketCallback(addPacketToSend));
-	}
+        serverFrameID = 0;
+    }
 
 	void FixedUpdate() {
-        if ((connection.connected) && (connection.recievedPackets.Count > 0))
+        if (needToShutDown)
         {
-            BaboRawPacket packet = connection.recievedPackets.Dequeue();
-            packetsProcessor.processPacket(packet); //update game state
-            /*if (packet.typeID == 106)
-                Debug.Log(DateTime.Now.ToString() + " <PING> " + connection.recievedPackets.Count.ToString());*/
-        }
-
-		if (needToShutDown) {
             connection.disconnect();
-		}
-		//repaint state
+        }
+        //repaint state
 
-	}
+    }
 
 	public void startGame() {
+        thisPlayer.transform.position = new Vector3(0, 100, 0);
 		gameObject.SetActive(true);
 
         uiManager.showGameMenu();
@@ -76,7 +84,7 @@ public class GameState: MonoBehaviour
 		connection.disconnect();
 		//clear map
 		map.clearMap();
-		//disable self
+        //disable self
 		gameObject.SetActive(false);
         //enable main menu
         uiManager.showMainMenu();
@@ -86,5 +94,13 @@ public class GameState: MonoBehaviour
     {
         uiManager.gameMenuInfo.text =
                 String.Format(l10n.menuGameInfo, _gameType.ToString(), "Server name", map.mapName, map.authorName, "Rules of this game"); ;
+    }
+
+    public void assignTeam(BaboPlayerTeamID team)
+    {
+        net_clsv_svcl_team_request teamRequest;
+        teamRequest.playerID = thisPlayer.playerState.playerID;
+        teamRequest.teamRequested = (sbyte)team;
+        connection.packetsToSend.Enqueue(new BaboRawPacket(teamRequest));
     }
 }

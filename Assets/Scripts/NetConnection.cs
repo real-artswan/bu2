@@ -16,7 +16,7 @@ public class BaboRawPacket
 
     public UInt16 dataSize
     {
-        get {return BitConverter.ToUInt16(header, 0);}
+        get { return BitConverter.ToUInt16(header, 0); }
     }
 
     public UInt16 typeID
@@ -26,7 +26,7 @@ public class BaboRawPacket
 
     public object packetToStruct()
     {
-        var type = Type.GetType(typeof(BaboPacketTypeID).Namespace + "." + ((BaboPacketTypeID)typeID).ToString().ToLower(), 
+        var type = Type.GetType(typeof(BaboPacketTypeID).Namespace + "." + ((BaboPacketTypeID)typeID).ToString().ToLower(),
             throwOnError: false);
 
         if (type == null)
@@ -52,7 +52,7 @@ public class BaboRawPacket
         return obj;
     }
 
-    public BaboRawPacket() { } 
+    public BaboRawPacket() { }
 
     public BaboRawPacket(object dataStruct)
     {
@@ -71,7 +71,7 @@ public class BaboRawPacket
         }
         finally
         {
-            Marshal.FreeHGlobal(ptr); 
+            Marshal.FreeHGlobal(ptr);
         }
         //fill the header
         Array.Copy(BitConverter.GetBytes(size), header, 2);
@@ -87,57 +87,73 @@ public class BaboRawPacket
 public delegate void AddPacketCallback(BaboRawPacket packet);
 public delegate bool GetPacketCallback(out BaboRawPacket packet);
 
-public class NetConnection: MonoBehaviour
+public class NetConnection : MonoBehaviour
 {
-	public Text ip;
-	public Text port;
-	public GameState gameState;
+    public Text ip;
+    public Text port;
+    public GameState gameState;
 
-	internal bool connected = false;
+    internal bool connected = false;
 
     public Queue<BaboRawPacket> recievedPackets = new Queue<BaboRawPacket>();
     public Queue<BaboRawPacket> packetsToSend = new Queue<BaboRawPacket>();
 
-	private BaboNetReadProcessor readBufferProcessor;
-	private BaboNetWriteProcessor writeBufferProcessor;
-	private TcpClient client;
+    private BaboNetReadProcessor readBufferProcessor;
+    private BaboNetWriteProcessor writeBufferProcessor;
+    private TcpClient client;
 
+    private BaboNetPacketProcessor packetsProcessor;
     void Start()
     {
-		//prepare buffer processors
-		readBufferProcessor = new BaboNetReadProcessor((p) => {
+        //prepare buffer processors
+        readBufferProcessor = new BaboNetReadProcessor((p) =>
+        {
             /*if (p.typeID == 106)
                 Debug.Log(DateTime.Now.ToString() + " Q<-PING");*/
-            recievedPackets.Enqueue(p); 
+            recievedPackets.Enqueue(p);
         });
-		writeBufferProcessor = new BaboNetWriteProcessor(
-			(out BaboRawPacket p) => { 
-				bool res = packetsToSend.Count > 0;
-				p = null;
-				if (res) {
-					p = packetsToSend.Dequeue();
+        writeBufferProcessor = new BaboNetWriteProcessor(
+            (out BaboRawPacket p) =>
+            {
+                bool res = packetsToSend.Count > 0;
+                p = null;
+                if (res)
+                {
+                    p = packetsToSend.Dequeue();
                     /*if (p.typeID == 1)
                         Debug.Log(DateTime.Now.ToString() + " Q->PONG");*/
-				}
-				return res;
-			});
+                }
+                return res;
+            });
+        packetsProcessor = new BaboNetPacketProcessor(gameState, p => { packetsToSend.Enqueue(p); });
     }
 
-    private NetworkStream netStream;
-    private bool shutdownError = false;
-    private IAsyncResult writeResult = null;
-
-    void Update() {
-        if (shutdownError)
+    private IEnumerator readLoop()
+    {
+        while (connected)
         {
-            Debug.Log("disconnected shutdown");
-            disconnect();
-            return;
-        }
-        else
-        {
-            if (connected && (packetsToSend.Count > 0) && ((writeResult == null) || (writeResult.IsCompleted)))
+            while (recievedPackets.Count > 0)
             {
+                BaboRawPacket packet = recievedPackets.Dequeue();
+                packetsProcessor.processPacket(packet); //update game state
+                                                        /*if (packet.typeID == 106)
+                                                            Debug.Log(DateTime.Now.ToString() + " <PING> " + connection.recievedPackets.Count.ToString());*/
+                //yield return new WaitForSeconds(0.001f);
+            }
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    private IEnumerator writeLoop()
+    {
+        while (connected)
+        {
+            while (packetsToSend.Count > 0)
+            {
+                while ((writeResult != null) && (!writeResult.IsCompleted)) //wait while writing prev buffer
+                {
+                    yield return new WaitForSeconds(0.001f);
+                }
                 byte[] buffer = writeBufferProcessor.prepareBuffer();
                 try
                 {
@@ -146,14 +162,30 @@ public class NetConnection: MonoBehaviour
                 }
                 catch (Exception e)
                 {
-                    Debug.Log("snd: " + e.ToString());
+                    Debug.Log("net write: " + e.ToString());
                     shutdownError = true;
                 }
             }
+            yield return new WaitForFixedUpdate();
         }
-	}
+    }
 
-    private bool prepareConnection() {
+    private NetworkStream netStream;
+    private bool shutdownError = false;
+    private IAsyncResult writeResult = null;
+
+    void Update()
+    {
+        if (shutdownError)
+        {
+            Debug.Log("disconnected shutdown");
+            disconnect();
+            return;
+        }
+    }
+
+    private bool prepareConnection()
+    {
         try
         {
             client = new TcpClient(AddressFamily.InterNetwork);
@@ -172,16 +204,17 @@ public class NetConnection: MonoBehaviour
         }
     }
 
-	public void startConnection()
+    public void startConnection()
     {
         shutdownError = false;
-		if (connected)
-			disconnect();
+        if (connected)
+            disconnect();
         if (!prepareConnection())
             return;
-        try {
-			//try to connect
-			client.Connect(ip.text, int.Parse(port.text));
+        try
+        {
+            //try to connect
+            client.Connect(ip.text, int.Parse(port.text));
 
             //We are connected successfully.
             netStream = client.GetStream();
@@ -199,6 +232,8 @@ public class NetConnection: MonoBehaviour
             connected = true;
             gameState.startGame();
 
+            StartCoroutine(writeLoop());
+            StartCoroutine(readLoop());
         }
         catch (Exception e)
         {
@@ -207,53 +242,59 @@ public class NetConnection: MonoBehaviour
         }
     }
 
-	private bool recieveConnInfo()
-	{
-		int needBytes = 37;
-		byte[] buffer = new byte[needBytes];
-		needBytes -= netStream.Read(buffer, 0, buffer.Length);
-		if (needBytes > 0)
-			return false;
-		//UInt32 connID = BitConverter.ToUInt32(buffer, 0);
-		UInt32 packetID = BitConverter.ToUInt32(buffer, sizeof(UInt32) + sizeof(byte) + sizeof(byte) * 28);
-		writeBufferProcessor.packetID = packetID;
-		readBufferProcessor.packetID = packetID + 1;
-		return true;
-	}
+    private bool recieveConnInfo()
+    {
+        int needBytes = 37;
+        byte[] buffer = new byte[needBytes];
+        needBytes -= netStream.Read(buffer, 0, buffer.Length);
+        if (needBytes > 0)
+            return false;
+        //UInt32 connID = BitConverter.ToUInt32(buffer, 0);
+        UInt32 packetID = BitConverter.ToUInt32(buffer, sizeof(UInt32) + sizeof(byte) + sizeof(byte) * 28);
+        writeBufferProcessor.packetID = packetID;
+        readBufferProcessor.packetID = packetID + 1;
+        return true;
+    }
 
-	private void ReadCallback(IAsyncResult result)
-	{    
-		try {
-			byte[] buffer = result.AsyncState as byte[];
+    private void ReadCallback(IAsyncResult result)
+    {
+        try
+        {
+            byte[] buffer = result.AsyncState as byte[];
             int readBytes = netStream.EndRead(result);
-			if (!readBufferProcessor.parseBuffer(readBytes, buffer))
-			{
-				Debug.Log("Fail to parse buffer");
+            if (!readBufferProcessor.parseBuffer(readBytes, buffer))
+            {
+                Debug.Log("Fail to parse buffer");
                 shutdownError = true;
-				return;
-			}
-			//Start reading from the network again.
-			netStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
-		}
-		catch (Exception e) {
-			Debug.Log("read: " + e.ToString());
+                return;
+            }
+            //Start reading from the network again.
+            netStream.BeginRead(buffer, 0, buffer.Length, ReadCallback, buffer);
+        }
+        catch (Exception e)
+        {
+            Debug.Log("read: " + e.ToString());
             shutdownError = true;
         }
-	}
+    }
 
-	public void disconnect()
-	{
+    public void disconnect()
+    {
         shutdownError = false;
         if (!connected)
             return;
-		connected = false;
-		try {
-         client.Close();
-		}
-		catch (Exception e) {
-			Debug.Log("dis: " + e.ToString());
-			//close socket silently
-		}
-		gameState.closeGame();
-	}
+
+        connected = false;
+        try
+        {
+            StopAllCoroutines();
+            client.Close();
+        }
+        catch (Exception e)
+        {
+            Debug.Log("dis: " + e.ToString());
+            //close socket silently
+        }
+        gameState.closeGame();
+    }
 }

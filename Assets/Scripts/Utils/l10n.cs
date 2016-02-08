@@ -10,4 +10,5 @@ public static class l10n
 	public static string serverMessage = "Server-> team:{0} dest:{1} msg:{2}";
 	public static string playerJoinedGame = "{0} joined the game";
     public static string menuGameInfo = "<b>{0}</b>\n{1}\n{2} created by {3}\n{4}";
+    public static string playerChangedHisNameFor = "Player {0} has changed his name for {1}";
 }

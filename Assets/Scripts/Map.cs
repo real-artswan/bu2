@@ -4,8 +4,7 @@ using Utils;
 using System.IO;
 
 public class Map : MonoBehaviour {
-
-    public Light lightSource;
+    public CameraController cameraController;
     public GameObject floor;
     public GameObject wallsParent;
     public string loadMapFromFile = "";
@@ -49,8 +48,8 @@ public class Map : MonoBehaviour {
         authorName = baboMap.author_name;
 		MapConverter.CreateUnityMap(baboMap, this);
 
-        Camera.main.transform.rotation = Quaternion.Euler(90, 0, 0); //look to map
-        Camera.main.transform.position = new Vector3(0, Camera.main.transform.position.y, 0);
+        cameraController.gameObject.transform.rotation = Quaternion.Euler(90, 0, 0); //look to map
+        cameraController.setCameraHeight(7);
         mapCreated = true;
     }
 

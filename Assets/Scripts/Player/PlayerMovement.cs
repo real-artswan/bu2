@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityStandardAssets.CrossPlatformInput;
 
 public class PlayerMovement : MonoBehaviour {
 
     public float moveSpeed = 10;
     public GameObject body;
     public CameraController cameraController;
-
+    public GameState gameState;
     private CharacterController controller;
     private Vector3 bounce = Vector3.zero;
 
@@ -16,8 +17,11 @@ public class PlayerMovement : MonoBehaviour {
 
     void Update()
     {
+        if ((gameState.thisPlayer.playerState == null) || (gameState.thisPlayer.playerState.teamID == BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
+            || (gameState.thisPlayer.playerState.teamID == BaboPlayerTeamID.PLAYER_TEAM_AUTO_ASSIGN))
+            return;
         //move
-        movePlayer(Input.GetAxis("UpDown"), Input.GetAxis("LeftRight"));
+        movePlayer(CrossPlatformInputManager.GetAxis("UpDown"), Input.GetAxis("LeftRight"));
 
         //turn
         //Vector2 mPosition = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
@@ -71,7 +75,7 @@ public class PlayerMovement : MonoBehaviour {
 
         // Only bounce on static objects...
         if ((body == null || body.isKinematic)) {
-            float kr = 1f;
+            float kr = 1.5f;
             Vector3 v = hit.controller.velocity;
             Vector3 n = hit.normal;
             Vector3 vn = Vector3.Dot(v, n) * n;
