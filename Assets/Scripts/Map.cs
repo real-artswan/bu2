@@ -18,7 +18,8 @@ public class Map : MonoBehaviour {
     internal bool mapCreated = false;
     internal float mapWidth = 0;
     internal float mapHeight = 0;
-
+	internal float wShift = 0;
+	internal float hShift = 0;
     void Start()
     {
         if (loadMapFromFile == "")

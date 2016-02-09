@@ -55,8 +55,10 @@ namespace Utils
 			Texture tex1 = Resources.Load("textures/themes/grass/tex_wall_center") as Texture;
 
 			Transform wallsParent = mapObject.wallsParent.transform;
-			float wShift = baboMap.width / 2 - 0.5f;
-			float hShift = baboMap.height / 2 - 0.5f;
+			mapObject.wShift = (float)baboMap.width / 2f;
+			mapObject.hShift = (float)baboMap.height / 2f;
+			float wShift = baboMap.width / 2f - 0.5f;
+			float hShift = baboMap.height / 2f - 0.5f;
 			for (int hInd = 0; hInd < baboMap.height; hInd++) {
 				for (int wInd = 0; wInd < baboMap.width; wInd++) {
 					BaboMapCell cell = baboMap.cells[hInd * baboMap.width + wInd];

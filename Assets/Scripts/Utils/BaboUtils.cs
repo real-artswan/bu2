@@ -35,17 +35,25 @@ public static class BaboUtils
 		return res;
 	}
 
+	public static Vector3 fromBaboPosition(short[] baboPos, float wShift, float hShift) {
+		return new Vector3((float)baboPos[0] / 100f - wShift, (float)baboPos[2] / 100f, (float)baboPos[1] / 100f - hShift);
+	}
+
+	public static Vector3 fromBaboPosition(float[] baboPos, float wShift, float hShift) {
+		return new Vector3(baboPos[0] - wShift, baboPos[2], baboPos[1] - hShift);
+	}
+
 	public static Vector3 vectorFromArray(short[] array) {
-		return new Vector3 (array [0], array [1], array [2]);
+		return new Vector3 (array [0], array [2], array [1]);
 	}
 
     public static Vector3 vectorFromArray(float[] array)
     {
-        return new Vector3(array[0], array[1], array[2]);
+		return new Vector3(array[0], array[2], array[1]);
     }
 
     public static Vector3 vectorFromArray(byte[] array) {
-		return new Vector3 (array [0], array [1], array [2]);
+		return new Vector3 (array [0], array [2], array [1]);
 	}
 
     public static string bytesToString(byte[] bytes)

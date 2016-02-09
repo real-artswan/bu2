@@ -16,7 +16,7 @@ public class PlayerState: MonoBehaviour {
     public static int MAX_MOLOTOVS = 1;
 
     internal string playerName = "";
-    internal readonly byte playerID = 0;
+    internal byte playerID = 0;
     internal Int32 netID = 0;
     internal string ip = "";
 	internal short ping = 0;
@@ -39,25 +39,50 @@ public class PlayerState: MonoBehaviour {
     private int _molotovs = 1;
     private float timeToSpawn;
     private float immuneTime;
-    private bool spawnRequested;
-    private int grenadeDelay;
-    private int meleeDelay;
-    internal BaboWeapon nextSpawnWeapon;
-    internal BaboWeapon nextSecondaryWeapon;
-    private int cFProgression;
+    private bool spawnRequested = false;
+    private int grenadeDelay = 0;
+    private int meleeDelay = 0;
+	internal BaboWeapon nextSpawnWeapon = BaboWeapon.WEAPON_SMG;
+	internal BaboWeapon nextSecondaryWeapon = BaboWeapon.KNIVES;
+    //private int cFProgression = 0;
 
     // Ses coord frames
-    private CoordFrame currentCF; // Celui qu'on affiche
-    private CoordFrame lastCF; // Le key frame de sauvegarde du frame courant
-    private CoordFrame netCF0; // L'avant dernier keyframe re� du net
-    private CoordFrame netCF1; // Le dernier keyframe re� du net
-    internal float camPosZ;
+	internal CoordFrame currentCF = new CoordFrame(); // Celui qu'on affiche
+	//private CoordFrame lastCF = new CoordFrame(); // Le key frame de sauvegarde du frame courant
+	//private CoordFrame netCF0 = new CoordFrame(); // L'avant dernier keyframe re� du net
+	//private CoordFrame netCF1 = new CoordFrame(); // Le dernier keyframe re� du net
+    internal float camPosZ = 5;
 
-    public PlayerState(byte playerID) {
-		this.playerID = playerID;
+	internal float firedShowDelay = 0;
+
+	void Start() {
+		reset();
 	}
 
-    internal void destroySelf()
+	void Update() {
+		if (status != BaboPlayerStatus.PLAYER_STATUS_ALIVE)
+			return;
+		if (transform.position.x >= 1000)
+			transform.position = currentCF.position;
+		else
+			transform.position = Vector3.Lerp(transform.position, currentCF.position, 0.5f);
+		// Determine the target rotation.  This is the rotation if the transform looks at the target point.
+		Quaternion targetRotation = Quaternion.LookRotation(currentCF.mousePosOnMap - transform.position);
+
+		// Smoothly rotate towards the target point.
+		transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 1);
+	}
+
+	public static PlayerState createSelf(byte playerID, GameObject prefab) {
+		GameObject obj = Instantiate(prefab) as GameObject;
+		obj.transform.position = new Vector3(1000, 1000, 1000);
+		//obj.SetActive(false);
+		PlayerState ps = obj.GetComponent<PlayerState>();
+		ps.playerID = playerID;
+		return ps;
+	}
+
+    internal void disconnect()
     {
         Destroy(gameObject);
     }
@@ -66,8 +91,8 @@ public class PlayerState: MonoBehaviour {
     {
         status = BaboPlayerStatus.PLAYER_STATUS_ALIVE;
         life = 1f; // Full of life
-        timeToSpawn = serverVars.sv_timeToSpawn;
-        immuneTime = serverVars.sv_spawnImmunityTime;
+        //timeToSpawn = serverVars.sv_timeToSpawn;
+        //immuneTime = serverVars.sv_spawnImmunityTime;
 
         //timeDead = 0.0f;
         //timeAlive = 0.0f;
@@ -79,12 +104,12 @@ public class PlayerState: MonoBehaviour {
         currentCF.vel = Vector3.zero;
         currentCF.angle = 0f;
 
-        lastCF = currentCF;
-        netCF0 = currentCF;
-        netCF1 = currentCF;
-        netCF0.reset();
-        netCF1.reset();
-        cFProgression = 0;
+        //lastCF = currentCF;
+        //netCF0 = currentCF;
+        //netCF1 = currentCF;
+        //netCF0.reset();
+        //netCF1.reset();
+        //cFProgression = 0;
 
         grenadeDelay = 0;
         meleeDelay = 0;
@@ -102,32 +127,70 @@ public class PlayerState: MonoBehaviour {
 
     internal void setCoordFrame(CoordFrame cf, float camPosZ)
     {
+		currentCF = cf;
         // Notre dernier keyframe change pour celui qu'on est rendu
-        netCF0 = currentCF;
-        netCF0.frameID = netCF1.frameID; // On pogne le frameID de l'ancien packet par contre
-        cFProgression = 0; // On commence au d�ut de la courbe ;)
+        //netCF0 = currentCF;
+        //netCF0.frameID = netCF1.frameID; // On pogne le frameID de l'ancien packet par contre
+        //cFProgression = 0; // On commence au d�ut de la courbe ;)
 
         // On donne la nouvelle velocity �notre entity
-        currentCF.vel = cf.vel / 10.0f;
+        //currentCF.vel = cf.vel / 10.0f;
 
         this.camPosZ = camPosZ;
 
         // Son frame ID
-        netCF1.frameID = cf.frameID;
+        //netCF1.frameID = cf.frameID;
 
         // Va faloir interpoler ici et pr�ire (job's done!)
-        netCF1.position = cf.position / 100.0f;
+        //netCF1.position = cf.position / 100.0f;
 
         // Sa velocity (� aussi va faloir l'interpoler jcr�ben
-        netCF1.vel = currentCF.vel;
+        //netCF1.vel = currentCF.vel;
 
         // La position de la mouse
-        netCF1.mousePosOnMap = cf.mousePosOnMap / 100.0f;
+        //netCF1.mousePosOnMap = cf.mousePosOnMap / 100.0f;
 
         // Si notre frameID �ait �0, on le copie direct
-        if (netCF0.frameID == 0)
-        {
-            netCF0 = netCF1;
-        }
+        //if (netCF0.frameID == 0)
+        //{
+        //    netCF0 = netCF1;
+        //}
     }
+
+	public void hit(BaboWeapon fromWeapon, PlayerState fromHit, float damage) {
+		
+	}
+
+	public void reset() {
+		teamID = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
+		status = BaboPlayerStatus.PLAYER_STATUS_LOADING;
+		kills = 0;
+		deaths = 0;
+		score = 0;
+		returns = 0;
+		flagAttempts = 0;
+		damage = 0;
+		dmg = 0;
+		timePlayedCurGame = 0;
+		_life = 1f;
+		_nades = MAX_NADES;
+		_molotovs = MAX_MOLOTOVS;
+		timeToSpawn = 3;
+		immuneTime = 1;
+		spawnRequested = false;
+		grenadeDelay = 0;
+		meleeDelay = 0;
+		//nextSpawnWeapon = BaboWeapon.WEAPON_SMG;
+		//nextSecondaryWeapon = BaboWeapon.KNIVES;
+		//cFProgression = 0;
+
+		// Ses coord frames
+		currentCF = new CoordFrame(); // Celui qu'on affiche
+		//lastCF = new CoordFrame(); // Le key frame de sauvegarde du frame courant
+		//netCF0 = new CoordFrame(); // L'avant dernier keyframe re� du net
+		//netCF1 = new CoordFrame(); // Le dernier keyframe re� du net
+		camPosZ = 5;
+
+		firedShowDelay = 0;
+	}
 }

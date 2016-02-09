@@ -13,6 +13,7 @@ public class MainWeapon : MonoBehaviour {
     internal Transform owner = null;
     private GameObject bullet;
     public float speedOfBullet = 20;
+	internal float damage = 0;
 
     void Start() {
         owner = transform.parent;
@@ -131,4 +132,8 @@ public class MainWeapon : MonoBehaviour {
             Debug.DrawLine(flashes[0].transform.position, camController.cursorPosInWorld, Color.red);*/
 
     }
+
+	public void shoot(Vector3 position1, Vector3 position2, Vector3 normal, byte nuzzleID) {
+		
+	}
 }

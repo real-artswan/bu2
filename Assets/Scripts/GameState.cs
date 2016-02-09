@@ -7,7 +7,8 @@ using System;
 
 public class GameState: MonoBehaviour
 {
-    public GameObject explosionModel;
+	public GameObject baboModel;
+	public ParticleSystem explosionModel;
 	public NetConnection connection;
 	public GlobalGameVariables gameVars;
 	public GlobalServerVariables serverVars;
@@ -20,14 +21,13 @@ public class GameState: MonoBehaviour
     internal Voting voting = new Voting();
 	internal Dictionary<byte, PlayerState> players = new Dictionary<byte, PlayerState>();
 	internal Dictionary<int, ProjectileState> projectiles = new Dictionary<int, ProjectileState>();
+	internal List<Trail> trails = new List<Trail>();
     internal float gameTimeLeft = 0;
 	internal float roundTimeLeft = 0;
     internal List<string> chatMessages = new List<string>();
     internal List<string> eventMessages = new List<string>();
     internal bool gotGameState = false;
     internal int mapSeed = 0; //?? what is this
-    internal short blueWin = 0;
-    internal short redWin = 0;
 	internal BaboGameType _gameType = BaboGameType.GAME_TYPE_DM;
 	internal BaboGameType getGameType(){
 		return _gameType;
@@ -40,6 +40,7 @@ public class GameState: MonoBehaviour
     internal float autoBalanceTimer = 0;
     internal short blueTeamScore = 0;
     internal short redTeamScore = 0;
+	internal float viewShake = 0;
 
     internal void setGameType(BaboGameType gameType) {
 		_gameType = gameType;
@@ -50,22 +51,15 @@ public class GameState: MonoBehaviour
         map.flagsState.redState = BaboFlagsState.FlagState.RETURNED;
         map.flagsState.blueState = BaboFlagsState.FlagState.RETURNED;
         
-        List<byte> keys = new List<byte>(players.Keys);
-        foreach (byte id in keys)
+		foreach (PlayerState ps in players.Values)
         {
-            if ((thisPlayer != null) && (thisPlayer.playerID == id))
-            {
-                players[id] = new PlayerState(id);
-                thisPlayer = players[id];
-            }
-            else
-                players[id] = new PlayerState(id);
+			ps.reset();
         }
 	}
 
-	
+
 	void Start() {
-        
+		gameObject.SetActive(false);
     }
 
 	void Update() {
@@ -81,8 +75,19 @@ public class GameState: MonoBehaviour
             int rtl = (int)roundTimeLeft + 1;
             hud.gameTimer.text = String.Format("{0:d2}:{1:d2}", gtl / 60, gtl % 60);
             hud.roundTimer.text = String.Format("{0:d2}:{1:d2}", rtl / 60, rtl % 60);
-            hud.blueTeamScore.text = blueTeamScore.ToString();
-            hud.redTeamScore.text = redTeamScore.ToString();
+			int max_score = 0;
+			switch (getGameType()) {
+				case BaboGameType.GAME_TYPE_CTF:
+					max_score = serverVars.sv_winLimit;
+					break;
+				case BaboGameType.GAME_TYPE_TDM:
+					max_score = serverVars.sv_scoreLimit;
+					break;
+			}
+			if (max_score > 0) {
+				hud.blueTeamScore.text = String.Format("{0}/{1}", blueTeamScore, max_score);
+				hud.redTeamScore.text = String.Format("{0}/{1}", redTeamScore, max_score);
+			}
         }
     }
 
@@ -96,7 +101,6 @@ public class GameState: MonoBehaviour
     }
 
 	public void startGame() {
-        thisPlayer.transform.position = new Vector3(0, 100, 0);
 		gameObject.SetActive(true);
 
         uiManager.showGameMenu();
@@ -131,7 +135,44 @@ public class GameState: MonoBehaviour
 
     internal void spawnExplosion(Vector3 position, Vector3 normal, float radius)
     {
-        ParticleSystem expl = Instantiate(explosionModel, position, Quaternion.identity) as ParticleSystem;
-        expl.gameObject.AddComponent<TimedDestroy>().delay = expl.startLifetime;
+		Debug.LogFormat("nade at {0}, normal {1}, radius {2}", position.ToString(), normal.ToString(), radius);
+		ParticleSystem expl = Instantiate(explosionModel, position, Quaternion.LookRotation(normal)) as ParticleSystem;
+		expl.transform.localScale = expl.transform.localScale * radius;
+		expl.Play();
     }
+
+	internal void spawnImpact(Vector3 position1, Vector3 position2, Vector3 normal, BaboWeapon shootWeapon, float damage, BaboPlayerTeamID teamID) {
+		Color trailColor = Color.black;
+		switch (shootWeapon){
+			case BaboWeapon.WEAPON_FLAME_THROWER:
+				//spawn fire
+				return;
+			case BaboWeapon.WEAPON_PHOTON_RIFLE:
+				switch (teamID) {
+					case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
+						trailColor = new Color(0.25f, 0.25f, 0.9f, 1);
+						break;
+					case BaboPlayerTeamID.PLAYER_TEAM_RED:
+						trailColor = new Color(0.9f, 0.25f, 0.25f, 1);
+						break;
+				}
+				float dmg = 2.0f;
+				trails.Add(new Trail(position1, position2, dmg, trailColor, dmg * 4, 0));
+				for (int i = 2; i < 5; i++)
+					trails.Add(new Trail(position1, position2, dmg / (float)Math.Pow(2, i), trailColor, dmg, 1));
+				break;
+			default:
+				switch (teamID) {
+					case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
+						trailColor = new Color(0.5f, 0.5f, 0.9f, 1);
+						break;
+					case BaboPlayerTeamID.PLAYER_TEAM_RED:
+						trailColor = new Color(0.9f, 0.5f, 0.5f, 1);
+						break;
+				}
+				trails.Add(new Trail(position1, position2, damage, trailColor, damage * 4, 0));
+				break;
+		}
+		//spawn shot's glow and smoke
+	}
 }

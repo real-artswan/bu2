@@ -1,17 +1,16 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Utils\network\BaboNetPackets.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Player\PlayerState.cs">
     <Files>
-      <File FileName="Assets\Scripts\Utils\GameTypes.cs" Line="63" Column="31" />
-      <File FileName="Assets\Scripts\Utils\network\BaboNetPacketProcessor.cs" Line="595" Column="54" />
-      <File FileName="Assets\Scripts\UI\PingGraph.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\GameState.cs" Line="19" Column="55" />
-      <File FileName="Assets\Scripts\Player\PlayerController.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\NetConnection.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Utils\MapConverter.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\ProjectileState.cs" Line="20" Column="51" />
-      <File FileName="Assets\Scripts\Utils\network\BaboNetPackets.cs" Line="561" Column="5" />
-      <File FileName="Assets\Scripts\Utils\BaboUtils.cs" Line="38" Column="39" />
+      <File FileName="Assets\Scripts\GameState.cs" Line="141" Column="15" />
+      <File FileName="Assets\Scripts\Utils\network\BaboNetPacketProcessor.cs" Line="269" Column="71" />
+      <File FileName="Assets\Scripts\ProjectileState.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Utils\network\BaboNetPackets.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Utils\BaboUtils.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Player\MainWeapon.cs" Line="44" Column="48" />
+      <File FileName="Assets\Scripts\Player\PlayerState.cs" Line="75" Column="2" />
+      <File FileName="Assets\Scripts\CameraController.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Player\PlayerMovement.cs" Line="44" Column="86" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

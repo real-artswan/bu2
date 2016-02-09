@@ -31,10 +31,10 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        updateWorldCursorPosCoords();
-
         if ((player == null) || (transform.rotation.eulerAngles.x == 0))
             return;
+		updateWorldCursorPosCoords();
+
         float camHeight = transform.position.y;
 
         //map bounds

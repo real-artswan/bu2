@@ -46,15 +46,15 @@ public class CanvasHUD : MonoBehaviour {
 				break;
 		}
 		if ((gameState.thisPlayer != null) && (gameState.thisPlayer.teamID != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)) {
-			nades.gameObject.SetActive(true);
-			molotovs.gameObject.SetActive(true);
+			nades.gameObject.transform.parent.gameObject.SetActive(true);
+			molotovs.gameObject.transform.parent.gameObject.SetActive(true);
 			health.gameObject.SetActive(true);
 			heatWpn.gameObject.SetActive(gameState.thisPlayer.mainWeapon.weaponType == BaboWeapon.WEAPON_CHAIN_GUN);
 		}
 		else
 		{
-			nades.gameObject.SetActive(false);
-			molotovs.gameObject.SetActive(false);
+			nades.gameObject.transform.parent.gameObject.SetActive(false);
+			molotovs.gameObject.transform.parent.gameObject.SetActive(false);
 			health.gameObject.SetActive(false);
 			heatWpn.gameObject.SetActive(false);
 		}

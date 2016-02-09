@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using UnityEngine;
- 
+
 namespace BaboNetwork
 {
 	public class BaboNetPacketProcessor
@@ -13,24 +13,21 @@ namespace BaboNetwork
 		private AddPacketCallback sendPacketCallback = null;
 		private bool isDownloadingMap = false;
 
-		private void doSendPacket(BaboRawPacket rawPacket)
-		{
+		private void doSendPacket(BaboRawPacket rawPacket) {
 			if (sendPacketCallback != null)
 				sendPacketCallback(rawPacket);
 		}
 
-		public BaboNetPacketProcessor(GameState gameState, AddPacketCallback doSendPacket)
-		{
+		public BaboNetPacketProcessor(GameState gameState, AddPacketCallback doSendPacket) {
 			this.gameState = gameState;
 			this.sendPacketCallback = doSendPacket;
 			
 			myMac = BaboUtils.GetMac();
 		}
-		public bool processPacket(BaboRawPacket rawPacket)
-		{
+
+		public bool processPacket(BaboRawPacket rawPacket) {
 			object parsedPacket = rawPacket.packetToStruct();
-			switch ((BaboPacketTypeID)rawPacket.typeID)
-			{
+			switch ((BaboPacketTypeID)rawPacket.typeID) {
 				case BaboPacketTypeID.NET_SVCL_PICKUP_ITEM:
 					doPickupItem((net_svcl_pickup_item)parsedPacket);
 					break;
@@ -193,49 +190,88 @@ namespace BaboNetwork
 		}
 
 
-		private void doCreateMinibot(net_svcl_create_minibot parsedPacket)
-		{
+		private void doCreateMinibot(net_svcl_create_minibot parsedPacket) {
 			//throw new NotImplementedException();
 		}
 
-		private void doMinibotCoordFrame(net_svcl_minibot_coord_frame parsedPacket)
-		{
+		private void doMinibotCoordFrame(net_svcl_minibot_coord_frame parsedPacket) {
 			//throw new NotImplementedException();
 		}
 
-		private void doSvclPlayerShoot(net_svcl_player_shoot parsedPacket)
-		{
-			//throw new NotImplementedException();
+		private void doSvclPlayerShoot(net_svcl_player_shoot playerShoot) {
+			BaboWeapon shootWeapon = (BaboWeapon)playerShoot.weaponID;
+			Vector3 p1 = BaboUtils.vectorFromArray(playerShoot.p1) / 100.0f;
+			Vector3 p2 = BaboUtils.vectorFromArray(playerShoot.p2) / 100.0f;
+			Vector3 normal = BaboUtils.vectorFromArray(playerShoot.normal) / 120.0f;
+			if (shootWeapon == BaboWeapon.WEAPON_MINIBOT_WEAPON)
+				return; //TODO
+			//is this shoot affected me
+			if (gameState.thisPlayer != null) {
+				if (gameState.thisPlayer.playerID == playerShoot.hitPlayerID) {
+					//shoot to me
+					Vector3 direction = Vector3.Normalize(p2 - p1);
+					gameState.thisPlayer.currentCF.vel += direction * gameState.serverVars.weaponsVars.vars[shootWeapon].damage * 2;
+				}
+				else {
+					if (gameState.thisPlayer.playerID == playerShoot.playerID) //my shoot
+						gameState.spawnImpact(p1, p2, normal, shootWeapon, gameState.thisPlayer.mainWeapon.damage, gameState.thisPlayer.teamID);
+				}
+			}
+			else
+			{
+				PlayerState pShoot;
+				if (!gameState.players.TryGetValue(playerShoot.playerID, out pShoot))
+					return;
+				pShoot.firedShowDelay = 2;
+				pShoot.mainWeapon.shoot(p1, p2, normal, playerShoot.nuzzleID);
+			}
 		}
 
-		private void doPlayerHit(net_svcl_player_hit parsedPacket)
-		{
-			//throw new NotImplementedException();
+		private void doPlayerHit(net_svcl_player_hit playerHit) {
+			PlayerState pHit;
+			if (!gameState.players.TryGetValue(playerHit.playerID, out pHit))
+				return;
+			PlayerState pFromHit;
+			if (!gameState.players.TryGetValue(playerHit.fromID, out pFromHit))
+				return;
+			BaboWeapon fromWeapon = (BaboWeapon)playerHit.weaponID;
+
+			if (pHit == gameState.thisPlayer) {
+				pHit.currentCF.vel += BaboUtils.vectorFromArray(playerHit.vel) / 10f;
+				switch (fromWeapon) {
+					case BaboWeapon.WEAPON_BAZOOKA:
+					case BaboWeapon.WEAPON_GRENADE:
+					case BaboWeapon.NUKE:
+						float realDamage = gameState.serverVars.weaponsVars.vars[fromWeapon].damage;
+						float viewShakeAmount = 2 - (playerHit.damage / realDamage);
+						gameState.viewShake += viewShakeAmount;
+						break;
+				}
+			}
+			pHit.hit((BaboWeapon)playerHit.weaponID, pFromHit, playerHit.damage);
 		}
 
-		private void doPlayerShootMelee(net_clsv_svcl_player_shoot_melee parsedPacket)
-		{
-            PlayerState ps;
-            if (!gameState.players.TryGetValue(parsedPacket.playerID, out ps))
-                return;
-            ps.secondaryWeapon.shoot();
-        }
-
-		private void doPlayerCoordFrame(net_clsv_svcl_player_coord_frame parsedPacket)
-		{
-            PlayerState ps;
-            if (!gameState.players.TryGetValue(parsedPacket.playerID, out ps))
-                return;
-            CoordFrame cf = new CoordFrame();
-            cf.frameID = parsedPacket.frameID;
-            cf.position = BaboUtils.vectorFromArray(parsedPacket.position);
-            cf.vel = BaboUtils.vectorFromArray(parsedPacket.vel);
-            cf.mousePosOnMap = BaboUtils.vectorFromArray(parsedPacket.mousePos);
-            ps.setCoordFrame(cf, parsedPacket.camPosZ);
+		private void doPlayerShootMelee(net_clsv_svcl_player_shoot_melee parsedPacket) {
+			PlayerState ps;
+			if (!gameState.players.TryGetValue(parsedPacket.playerID, out ps))
+				return;
+			ps.secondaryWeapon.shoot();
 		}
 
-		private void doExplosion(net_svcl_explosion explosion)
-		{
+		private void doPlayerCoordFrame(net_clsv_svcl_player_coord_frame parsedPacket) {
+			PlayerState ps;
+			if (!gameState.players.TryGetValue(parsedPacket.playerID, out ps))
+				return;
+			CoordFrame cf = new CoordFrame();
+			cf.frameID = parsedPacket.frameID;
+
+			cf.position = BaboUtils.fromBaboPosition(parsedPacket.position, gameState.map.wShift, gameState.map.hShift);
+			cf.mousePosOnMap = BaboUtils.fromBaboPosition(parsedPacket.mousePos, gameState.map.wShift, gameState.map.hShift);
+			cf.vel = BaboUtils.vectorFromArray(parsedPacket.vel);
+			ps.setCoordFrame(cf, parsedPacket.camPosZ);
+		}
+
+		private void doExplosion(net_svcl_explosion explosion) {
 			/*if (explosion.playerID == gameState.thisPlayer.playerID)
 			{
 				game->thisPlayer->rocketInAir = false;
@@ -248,99 +284,86 @@ namespace BaboNetwork
 					game->thisPlayer->minibot = 0;
 				}
 			}*/
-			gameState.spawnExplosion(BaboUtils.vectorFromArray(explosion.position), BaboUtils.vectorFromArray(explosion.normal), explosion.radius);
+			gameState.spawnExplosion(BaboUtils.fromBaboPosition(explosion.position, gameState.map.wShift, gameState.map.hShift), BaboUtils.vectorFromArray(explosion.normal), explosion.radius);
 		}
 
-		private void doPlayerProjectile(net_clsv_svcl_player_projectile parsedPacket)
-		{
+		private void doPlayerProjectile(net_clsv_svcl_player_projectile parsedPacket) {
 			PlayerState ps;
-			if (!gameState.players.TryGetValue (parsedPacket.playerID, out ps))
+			if (!gameState.players.TryGetValue(parsedPacket.playerID, out ps))
 				return;
-			if (gameState.thisPlayer == ps)
-			{
+			if (gameState.thisPlayer == ps) {
 				
 			}
-			ProjectileState projectile = new ProjectileState ();
+			ProjectileState projectile = new ProjectileState();
 			projectile.nuzzleID = parsedPacket.nuzzleID;
 			projectile.playerID = parsedPacket.playerID;
-			projectile.position = BaboUtils.vectorFromArray (parsedPacket.position);
+			projectile.position = BaboUtils.vectorFromArray(parsedPacket.position);
 			projectile.typeID = (BaboProjectileType)parsedPacket.projectileType;
 			projectile.uniqueID = parsedPacket.uniqueID;
-			projectile.vel = BaboUtils.vectorFromArray (parsedPacket.vel);
+			projectile.vel = BaboUtils.vectorFromArray(parsedPacket.vel);
 			projectile.weaponID = (BaboWeapon)parsedPacket.weaponID;
-			gameState.projectiles.Add (parsedPacket.uniqueID, projectile);
+			gameState.projectiles.Add(parsedPacket.uniqueID, projectile);
 		}
 
-		private void doProjectileCoordFrame(net_svcl_projectile_coord_frame parsedPacket)
-		{
+		private void doProjectileCoordFrame(net_svcl_projectile_coord_frame parsedPacket) {
 			ProjectileState ps;
-			if (!gameState.projectiles.TryGetValue (parsedPacket.uniqueID, out ps))
+			if (!gameState.projectiles.TryGetValue(parsedPacket.uniqueID, out ps))
 				return;
 			ps.coordFrame.frameID = parsedPacket.frameID;
-			ps.coordFrame.position = BaboUtils.vectorFromArray (parsedPacket.position);
-			ps.coordFrame.vel = BaboUtils.vectorFromArray (parsedPacket.vel);
+			ps.coordFrame.position = BaboUtils.vectorFromArray(parsedPacket.position);
+			ps.coordFrame.vel = BaboUtils.vectorFromArray(parsedPacket.vel);
 		}
 
-		private void doDeleteProjectile(net_svcl_delete_projectile parsedPacket)
-		{
-			if (gameState.projectiles.ContainsKey (parsedPacket.projectileID))
-				gameState.projectiles.Remove (parsedPacket.projectileID);
+		private void doDeleteProjectile(net_svcl_delete_projectile parsedPacket) {
+			if (gameState.projectiles.ContainsKey(parsedPacket.projectileID))
+				gameState.projectiles.Remove(parsedPacket.projectileID);
 		}
 
-		private void doFlameStickToPlayer(net_svcl_flame_stick_to_player parsedPacket)
-		{
+		private void doFlameStickToPlayer(net_svcl_flame_stick_to_player parsedPacket) {
 			ProjectileState p;
 			if (!gameState.projectiles.TryGetValue(parsedPacket.projectileID, out p))
 				return;
 			p.stickToPlayer = parsedPacket.playerID;
 		}
 
-		private void doPickupItem(net_svcl_pickup_item parsedPacket)
-		{
+		private void doPickupItem(net_svcl_pickup_item parsedPacket) {
 			PlayerState ps;
 			if (!gameState.players.TryGetValue(parsedPacket.playerID, out ps))
 				return;
-			switch ((BaboGrabbableItem)parsedPacket.itemType)
-			{
+			switch ((BaboGrabbableItem)parsedPacket.itemType) {
 				case BaboGrabbableItem.ITEM_LIFE_PACK:
 					ps.life += .5f;
 
-					if (gameState.thisPlayer == ps)
-					{
+					if (gameState.thisPlayer == ps) {
 						//dksPlaySound(gameVar.sfx_lifePack, -1, 255);
 					}
 					break;
 				case BaboGrabbableItem.ITEM_WEAPON:
 					ps.mainWeapon.setWeapon((BaboWeapon)parsedPacket.itemFlag);
-					if (gameState.thisPlayer == ps)
-					{
+					if (gameState.thisPlayer == ps) {
 						//dksPlaySound(gameVar.sfx_equip, -1, 255);
 					}
 					break;
 				case BaboGrabbableItem.ITEM_GRENADE:
 					ps.nades++;
 
-					if (gameState.thisPlayer == ps)
-					{
+					if (gameState.thisPlayer == ps) {
 						//dksPlaySound(gameVar.sfx_equip, -1, 255);
 					}
 					break;
 			}
 		}
 
-		private void doSvChange(net_svcl_sv_change parsedPacket)
-		{
+		private void doSvChange(net_svcl_sv_change parsedPacket) {
 			gameState.serverVars.setRawVar(BaboUtils.bytesToString(parsedPacket.svChange));
 		}
 
-		private void doUpdateVote(net_svcl_update_vote parsedPacket)
-		{
+		private void doUpdateVote(net_svcl_update_vote parsedPacket) {
 			gameState.voting.yes = parsedPacket.nbYes;
 			gameState.voting.no = parsedPacket.nbNo;
 		}
 
-		private void doVoteResult(net_svcl_vote_result parsedPacket)
-		{
+		private void doVoteResult(net_svcl_vote_result parsedPacket) {
 			gameState.voting.inProgress = false;
 			if (parsedPacket.passed)
 				gameState.eventMessages.Add(l10n.votePassed);
@@ -348,8 +371,7 @@ namespace BaboNetwork
 				gameState.eventMessages.Add(l10n.voteFailed);
 		}
 
-		private void doVoteRequest(net_clsv_svcl_vote_request parsedPacket)
-		{
+		private void doVoteRequest(net_clsv_svcl_vote_request parsedPacket) {
 			gameState.voting.inProgress = true;
 			gameState.voting.no = 0;
 			gameState.voting.yes = 0;
@@ -357,18 +379,14 @@ namespace BaboNetwork
 			gameState.voting.what = BaboUtils.bytesToString(parsedPacket.vote);
 		}
 
-		private void doMapChunk(net_svcl_map_chunk parsedPacket)
-		{
-			if (isDownloadingMap && (gameState.thisPlayer != null))
-			{
+		private void doMapChunk(net_svcl_map_chunk parsedPacket) {
+			if (isDownloadingMap && (gameState.thisPlayer != null)) {
 				// Map has been recieved when last chunk is 0
-				if (parsedPacket.size == 0)
-				{
+				if (parsedPacket.size == 0) {
 					isDownloadingMap = false;
 					gameState.map.mapBuffer.Position = 0;
 					gameState.map.createMap();
-					if (!gameState.map.mapCreated)
-					{
+					if (!gameState.map.mapCreated) {
 						gameState.needToShutDown = true;
 						return;
 					}
@@ -378,35 +396,28 @@ namespace BaboNetwork
 					gameVersionAccepted.playerID = gameState.thisPlayer.playerID;
 					//strcpy(gameVersionAccepted.password, m_password.s);
 					doSendPacket(new BaboRawPacket(gameVersionAccepted));
-				}
-				else
-				{
+				} else {
 					gameState.map.mapBuffer.Write(parsedPacket.data, 0, parsedPacket.size);
 				}
 			}
 		}
 
-		private void doMsg(net_svcl_msg parsedPacket)
-		{
+		private void doMsg(net_svcl_msg parsedPacket) {
 			gameState.chatMessages.Add(String.Format(l10n.serverMessage,
 				parsedPacket.teamID, parsedPacket.msgDest, parsedPacket.message));
 		}
 
-		private void doChat(net_clsv_svcl_chat parsedPacket)
-		{
+		private void doChat(net_clsv_svcl_chat parsedPacket) {
 			if (gameState.thisPlayer == null)
 				return;
 			if ((parsedPacket.teamID <= (int)BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
-				|| (parsedPacket.teamID == (int)gameState.thisPlayer.teamID))
-			{
+			    || (parsedPacket.teamID == (int)gameState.thisPlayer.teamID)) {
 				gameState.chatMessages.Add(BaboUtils.bytesToString(parsedPacket.message));
 			}
 		}
 
-		private void doGameVersion(net_svcl_gameversion parsedPacket)
-		{
-			if ((parsedPacket.gameVersion == GAME_VERSION_CL) && (gameState.thisPlayer != null))
-			{
+		private void doGameVersion(net_svcl_gameversion parsedPacket) {
+			if ((parsedPacket.gameVersion == GAME_VERSION_CL) && (gameState.thisPlayer != null)) {
 				//send my player info
 				net_clsv_svcl_player_info playerInfo = new net_clsv_svcl_player_info(true);
 
@@ -422,35 +433,28 @@ namespace BaboNetwork
 				net_clsv_gameversion_accepted gameVersionAccepted = new net_clsv_gameversion_accepted(true);
 				gameVersionAccepted.playerID = gameState.thisPlayer.playerID;
 				doSendPacket(new BaboRawPacket(gameVersionAccepted));
-			}
-			else
-			{
+			} else {
 				Debug.Log("Wrong game version or player not inited: " + parsedPacket.gameVersion.ToString());
 			}
 		}
 
-		private void doPlayerChangeName(net_clsv_svcl_player_change_name parsedPacket)
-		{
+		private void doPlayerChangeName(net_clsv_svcl_player_change_name parsedPacket) {
 			PlayerState ps;
-			if (gameState.players.TryGetValue(parsedPacket.playerID, out ps))
-			{
+			if (gameState.players.TryGetValue(parsedPacket.playerID, out ps)) {
 				string newName = BaboUtils.bytesToString(parsedPacket.playerName);
 				gameState.eventMessages.Add(String.Format(l10n.playerChangedHisNameFor, ps.playerName, newName));
 				ps.playerName = newName;
 			}
 		}
 
-		private void doTeamRequest(net_clsv_svcl_team_request parsedPacket)
-		{
+		private void doTeamRequest(net_clsv_svcl_team_request parsedPacket) {
 			PlayerState playerState;
-			if (gameState.players.TryGetValue(parsedPacket.playerID, out playerState))
-			{
+			if (gameState.players.TryGetValue(parsedPacket.playerID, out playerState)) {
 				playerState.teamID = (BaboPlayerTeamID)parsedPacket.teamRequested;
 			}
 		}
 
-		private void doPlayerUpdateSkin(net_clsv_svcl_player_update_skin updateSkin)
-		{
+		private void doPlayerUpdateSkin(net_clsv_svcl_player_update_skin updateSkin) {
 			PlayerState ps;
 			if (!gameState.players.TryGetValue(updateSkin.playerID, out ps))
 				return;
@@ -467,8 +471,7 @@ namespace BaboNetwork
 			ps.body.updateSkin(teamColor);
 		}
 
-		private void doPlayerUpdateStats(net_svcl_player_update_stats playerStats)
-		{
+		private void doPlayerUpdateStats(net_svcl_player_update_stats playerStats) {
 			PlayerState ps;
 			if (!gameState.players.TryGetValue(playerStats.playerID, out ps))
 				return;
@@ -480,22 +483,19 @@ namespace BaboNetwork
 			ps.timePlayedCurGame = playerStats.timePlayedCurGame;
 		}
 
-		private void doNewPlayer(net_svcl_newplayer parsedPacket)
-		{
+		private void doNewPlayer(net_svcl_newplayer parsedPacket) {
 			if (gameState.players.ContainsKey(parsedPacket.newPlayerID))
 				return;
-			PlayerState playerState = new PlayerState(parsedPacket.newPlayerID);
+			PlayerState playerState = PlayerState.createSelf(parsedPacket.newPlayerID, gameState.baboModel);
 			playerState.netID = parsedPacket.baboNetID;
 			gameState.players.Add(parsedPacket.newPlayerID, playerState);
 
-			if (gameState.thisPlayer == null)
-			{
+			if (gameState.thisPlayer == null) {
 				gameState.thisPlayer = playerState;
 			}
 		}
 
-		private void doPlayerSpawn(net_svcl_player_spawn playerSpawn)
-		{
+		private void doPlayerSpawn(net_svcl_player_spawn playerSpawn) {
 			PlayerState ps;
 			if (!gameState.players.TryGetValue(playerSpawn.playerID, out ps))
 				return;
@@ -503,7 +503,8 @@ namespace BaboNetwork
 			ps.body.skin = BaboUtils.bytesToString(playerSpawn.skin);
 			ps.body.blueDecal = BaboUtils.fromBaboColor(playerSpawn.blueDecal);
 			ps.body.greenDecal = BaboUtils.fromBaboColor(playerSpawn.greenDecal);
-			ps.body.redDecal = BaboUtils.fromBaboColor(playerSpawn.redDecal); ;
+			ps.body.redDecal = BaboUtils.fromBaboColor(playerSpawn.redDecal);
+			;
 			BaboPlayerTeamID teamColor = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
 			if ((gameState.getGameType() != BaboGameType.GAME_TYPE_DM) || (gameState.getGameType() != BaboGameType.GAME_TYPE_SND))
 				teamColor = ps.teamID;
@@ -513,9 +514,14 @@ namespace BaboNetwork
 			ps.prepareToSpawn(new Vector3((float)playerSpawn.position[0] / 10.0f, (float)playerSpawn.position[1] / 10.0f, (float)playerSpawn.position[2] / 10.0f));
 		}
 
-		private void doPlayerEnumState(net_svcl_player_enum_state parsedPacket)
-		{
-			PlayerState ps = new PlayerState(parsedPacket.playerID);
+		private void doPlayerEnumState(net_svcl_player_enum_state parsedPacket) {
+			PlayerState ps;
+			if (gameState.players.TryGetValue(parsedPacket.playerID, out ps)) {
+				gameState.players.Remove(parsedPacket.playerID);
+				ps.disconnect();
+			}
+				
+			ps = PlayerState.createSelf(parsedPacket.playerID, gameState.baboModel);
 
 			ps.netID = parsedPacket.babonetID;
 			ps.playerName = BaboUtils.bytesToString(parsedPacket.playerName);
@@ -542,16 +548,13 @@ namespace BaboNetwork
 			ps.body.updateSkin(teamColor);
 
 			gameState.eventMessages.Add(string.Format(l10n.addingPlayer, ps.playerName));
-			if (gameState.players.ContainsKey(parsedPacket.playerID))
-				gameState.players.Remove(parsedPacket.playerID);
+
 			gameState.players.Add(parsedPacket.playerID, ps);
 		}
 
-		private void doPlayerInfo(net_clsv_svcl_player_info parsedPacket)
-		{
+		private void doPlayerInfo(net_clsv_svcl_player_info parsedPacket) {
 			PlayerState playerState;
-			if (gameState.players.TryGetValue(parsedPacket.playerID, out playerState))
-			{
+			if (gameState.players.TryGetValue(parsedPacket.playerID, out playerState)) {
 				playerState.playerName = BaboUtils.bytesToString(parsedPacket.playerName);
 				playerState.ip = BaboUtils.bytesToString(parsedPacket.playerIP);
 
@@ -559,30 +562,25 @@ namespace BaboNetwork
 			}
 		}
 
-		private void doPlayerDisconnect(net_svcl_player_disconnect parsedPacket)
-		{
+		private void doPlayerDisconnect(net_svcl_player_disconnect parsedPacket) {
 			PlayerState player;
-			if (gameState.players.TryGetValue(parsedPacket.playerID, out player))
-			{
+			if (gameState.players.TryGetValue(parsedPacket.playerID, out player)) {
 				gameState.eventMessages.Add(String.Format(l10n.playerDisconnected, player.playerName));
 				gameState.players.Remove(parsedPacket.playerID);
-				player.destroySelf();
+				player.disconnect();
 			}
 		}
 
-		private void doServerDisconnect()
-		{
+		private void doServerDisconnect() {
 			gameState.eventMessages.Add(l10n.serverDisconnected);
 			gameState.needToShutDown = true;
 		}
 
-		private void doMapList(net_svcl_map_list parsedPacket)
-		{
+		private void doMapList(net_svcl_map_list parsedPacket) {
 			gameState.eventMessages.Add(BaboUtils.bytesToString(parsedPacket.mapName));
 		}
 
-		private void requestMap(byte[] name)
-		{
+		private void requestMap(byte[] name) {
 			isDownloadingMap = true;
 
 			net_clsv_map_request request = new net_clsv_map_request(true);
@@ -591,30 +589,25 @@ namespace BaboNetwork
 			doSendPacket(new BaboRawPacket(request));
 		}
 
-		private void doMapChange(net_svcl_map_change parsedPacket)
-		{
+		private void doMapChange(net_svcl_map_change parsedPacket) {
 			gameState.map.mapName = BaboUtils.bytesToString(parsedPacket.mapName);
 			gameState.setGameType((BaboGameType)parsedPacket.gameType);
 			requestMap(parsedPacket.mapName);
 		}
 
-		private void doChangeGameType(net_svcl_change_game_type parsedPacket)
-		{
+		private void doChangeGameType(net_svcl_change_game_type parsedPacket) {
 			gameState.setGameType((BaboGameType)parsedPacket.newGameType);
 		}
 
-		private void doFlagEnum(net_svcl_flag_enum parsedPacket)
-		{
+		private void doFlagEnum(net_svcl_flag_enum parsedPacket) {
 			gameState.map.flagsState.blueState = (BaboFlagsState.FlagState)parsedPacket.flagState[0];
 			gameState.map.flagsState.redState = (BaboFlagsState.FlagState)parsedPacket.flagState[1];
 			gameState.map.flagsState.bluePos = BaboUtils.vectorFromArray(parsedPacket.positionBlue);
 			gameState.map.flagsState.redPos = BaboUtils.vectorFromArray(parsedPacket.positionRed);
 		}
 
-		private void doDropFlag(net_svcl_drop_flag dropFlag)
-		{
-			switch ((BaboPlayerTeamID)dropFlag.flagID)
-			{
+		private void doDropFlag(net_svcl_drop_flag dropFlag) {
+			switch ((BaboPlayerTeamID)dropFlag.flagID) {
 				case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
 					gameState.map.flagsState.blueState = BaboFlagsState.FlagState.ABANDONED;
 					gameState.map.flagsState.bluePos = BaboUtils.vectorFromArray(dropFlag.position);
@@ -629,28 +622,24 @@ namespace BaboNetwork
 			}
 		}
 
-		private void doChangeFlagState(net_svcl_change_flag_state flagState)
-		{
+		private void doChangeFlagState(net_svcl_change_flag_state flagState) {
 			if (gameState.map.flagsState.stateByID(flagState.flagID) == (BaboFlagsState.FlagState)flagState.newFlagState)
 				return;
 			PlayerState ps;
 			if (!gameState.players.TryGetValue(flagState.playerID, out ps))
 				return;
 			string eventMsg = "";
-			switch ((BaboFlagsState.FlagState)flagState.newFlagState)
-			{
-				//case BaboFlagsState.FlagState.ABANDONED: handles by net_svcl_drop_flag message
-				//break;
+			switch ((BaboFlagsState.FlagState)flagState.newFlagState) {
+			//case BaboFlagsState.FlagState.ABANDONED: handles by net_svcl_drop_flag message
+			//break;
 				case BaboFlagsState.FlagState.RETURNED:
-					if ((BaboPlayerTeamID)flagState.flagID == ps.teamID)
-					{
+					if ((BaboPlayerTeamID)flagState.flagID == ps.teamID) {
 						ps.returns++;
 						if ((BaboPlayerTeamID)flagState.flagID == BaboPlayerTeamID.PLAYER_TEAM_RED)
 							eventMsg = string.Format(l10n.playerReturnedFlag, ps.playerName, l10n.red);
 						else
 							eventMsg = string.Format(l10n.playerReturnedFlag, ps.playerName, l10n.blue);
-					}
-					else {
+					} else {
 						ps.score++;
 						if ((BaboPlayerTeamID)flagState.flagID == BaboPlayerTeamID.PLAYER_TEAM_RED)
 							eventMsg = string.Format(l10n.playerScoresFlag, ps.playerName, l10n.red);
@@ -671,16 +660,13 @@ namespace BaboNetwork
 					return;
 			}
 			gameState.eventMessages.Add(eventMsg);
-			switch ((BaboPlayerTeamID)flagState.flagID)
-			{
+			switch ((BaboPlayerTeamID)flagState.flagID) {
 				case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
 					gameState.blueTeamScore++;
-					gameState.blueWin++;
 					gameState.map.flagsState.blueState = (BaboFlagsState.FlagState)flagState.newFlagState;
 					break;
 				case BaboPlayerTeamID.PLAYER_TEAM_RED:
 					gameState.redTeamScore++;
-					gameState.redWin++;
 					gameState.map.flagsState.redState = (BaboFlagsState.FlagState)flagState.newFlagState;
 					break;
 				default:
@@ -689,25 +675,29 @@ namespace BaboNetwork
 			}
 		}
 
-		private void doServerInfo(net_svcl_server_info parsedPacket)
-		{
+		private void doServerInfo(net_svcl_server_info parsedPacket) {
 			gameState.gotGameState = true;
 
 			gameState.mapSeed = parsedPacket.mapSeed;
 			gameState.map.mapName = BaboUtils.bytesToString(parsedPacket.mapName);
-			gameState.blueTeamScore = parsedPacket.blueScore;
-			gameState.redTeamScore = parsedPacket.redScore;
-			gameState.blueWin = parsedPacket.blueWin;
-			gameState.redWin = parsedPacket.redWin;
-			gameState.setGameType((BaboGameType)parsedPacket.gameType);
-			if (gameState.thisPlayer != null)
-			{
+			BaboGameType gameType = (BaboGameType)parsedPacket.gameType;
+			switch (gameType) {
+				case BaboGameType.GAME_TYPE_CTF:
+					gameState.blueTeamScore = parsedPacket.blueWin;
+					gameState.redTeamScore = parsedPacket.redWin;
+					break;
+				case BaboGameType.GAME_TYPE_TDM:
+					gameState.blueTeamScore = parsedPacket.blueScore;
+					gameState.redTeamScore = parsedPacket.redScore;
+					break;
+			}
+			gameState.setGameType(gameType);
+			if (gameState.thisPlayer != null) {
 				// On n'est plus en mode loading (y a tu vraiment un mode loader? lol)
 				gameState.thisPlayer.status = BaboPlayerStatus.PLAYER_STATUS_DEAD;
 			}
 			// If no map created, send request
-			if (!gameState.map.mapCreated)
-			{
+			if (!gameState.map.mapCreated) {
 				gameState.gotGameState = false;
 				requestMap(parsedPacket.mapName);
 			}
@@ -715,31 +705,26 @@ namespace BaboNetwork
 		}
 
 		//round state
-		private void doGameState(net_svcl_game_state parsedPacket)
-		{
+		private void doGameState(net_svcl_game_state parsedPacket) {
 			// Do not load round state if map still downloading
 			if (isDownloadingMap)
 				return;
 
 			gameState.roundState = (BaboRoundState)parsedPacket.newState;
 
-			if (parsedPacket.reInit != 0)
-			{
+			if (parsedPacket.reInit != 0) {
 				// Ouch, on fout toute а 0 (score, etc)
 			}
 		}
 
-		private void doPlayerPing(net_svcl_player_ping parsedPacket)
-		{
+		private void doPlayerPing(net_svcl_player_ping parsedPacket) {
 			PlayerState player;
-			if (gameState.players.TryGetValue(parsedPacket.playerID, out player))
-			{
+			if (gameState.players.TryGetValue(parsedPacket.playerID, out player)) {
 				player.ping = parsedPacket.ping;
 			}
 		}
 
-		private void doPing(net_svcl_ping parsedPacket)
-		{
+		private void doPing(net_svcl_ping parsedPacket) {
 			if (gameState.thisPlayer == null)
 				return;
 			net_clsv_pong pong = new net_clsv_pong();
@@ -747,8 +732,7 @@ namespace BaboNetwork
 			doSendPacket(new BaboRawPacket(pong));
 		}
 
-		private void doSyncTimer(net_svcl_synchronize_timer parsedPacket)
-		{
+		private void doSyncTimer(net_svcl_synchronize_timer parsedPacket) {
 			//if (parsedPacket.frameID > gameState.serverFrameID)
 			{
 				gameState.serverFrameID = parsedPacket.frameID;
@@ -757,8 +741,7 @@ namespace BaboNetwork
 			}
 		}
 
-		private void doHashSeed(net_svcl_hash_seed parsedPacket)
-		{
+		private void doHashSeed(net_svcl_hash_seed parsedPacket) {
 			// we receive an hash seed, we need to send a response back
 			byte[] hash = Encoding.ASCII.GetBytes(BaboUtils.GetMac());
 
@@ -772,35 +755,29 @@ namespace BaboNetwork
 			doSendPacket(new BaboRawPacket(hash_seed));
 		}
 
-		private void doAdminAccepted()
-		{
+		private void doAdminAccepted() {
 			gameState.eventMessages.Add(l10n.adminAccepted);
 			gameState.isAdmin = true;
 		}
 
-		private void doPlaySound(net_svcl_play_sound parsedPacket)
-		{
+		private void doPlaySound(net_svcl_play_sound parsedPacket) {
 			//TODO: sounds
 		}
 
-		private void doBadChecksumEntity(net_svcl_bad_checksum_entity bce)
-		{
+		private void doBadChecksumEntity(net_svcl_bad_checksum_entity bce) {
 			gameState.eventMessages.Add(string.Format(l10n.badCheckSumEntity, bce.id, BaboUtils.bytesToString(bce.name),
 				BaboUtils.bytesToString(bce.playerIP)));
 		}
 
-		private void doBadChecksumInfo(net_svcl_bad_checksum_info bci)
-		{
+		private void doBadChecksumInfo(net_svcl_bad_checksum_info bci) {
 			gameState.eventMessages.Add(string.Format(l10n.badCheckSumInfo, bci.number));
 		}
 
-		private void doConsole(BaboRawPacket parsedPacket)
-		{
+		private void doConsole(BaboRawPacket parsedPacket) {
 			gameState.eventMessages.Add(BaboUtils.bytesToString(parsedPacket.data));
 		}
 
-		private void doAutoBalance()
-		{
+		private void doAutoBalance() {
 			gameState.autoBalanceTimer = (float)gameState.serverVars.sv_autoBalanceTime;
 		}
 	}
