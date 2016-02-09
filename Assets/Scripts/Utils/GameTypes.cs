@@ -4,13 +4,39 @@ using System.Collections;
 public class BaboFlagsState
 {
 	public enum FlagState {
-        INITIAL = -2,
-		DROP = -1
+		RETURNED = -2,
+		ABANDONED = -1,
+		CAPTURED = 0,
+		STOLEN = 1
 	}
 	public Vector3 redPos;
 	public Vector3 bluePos;
-	public FlagState redState;
-	public FlagState blueState;
+	public FlagState redState = FlagState.RETURNED;
+	public FlagState blueState = FlagState.RETURNED;
+
+	public FlagState stateByID(int id)
+	{
+		switch (id)
+		{
+			case 0:
+				return blueState;
+			case 1:
+				return redState;
+		}
+		return FlagState.RETURNED;
+	}
+
+	public Vector3 posByID(int id)
+	{
+		switch (id)
+		{
+			case 0:
+				return bluePos;
+			case 1:
+				return redPos;
+		}
+		return Vector3.zero;
+	}
 }
 
 public enum BaboPlayerTeamID
@@ -28,7 +54,7 @@ public enum BaboPlayerStatus
 	PLAYER_STATUS_LOADING = 2
 }
 
-public enum BaboMainWeapon
+public enum BaboWeapon
 {
 	WEAPON_NO = -1,
 	WEAPON_SMG = 0,
@@ -38,7 +64,7 @@ public enum BaboMainWeapon
 	WEAPON_CHAIN_GUN = 4,
 	WEAPON_BAZOOKA = 5,
 	WEAPON_PHOTON_RIFLE = 6,
-    WEAPON_FLAME_THROWER = 7,
+	WEAPON_FLAME_THROWER = 7,
 	WEAPON_GRENADE = 8,
 	WEAPON_COCKTAIL_MOLOTOV = 9,
 	KNIVES = 10, 
@@ -73,4 +99,11 @@ public enum BaboProjectileType
 	PROJECTILE_GIB = 9,
 	PROJECTILE_NONE = 10,
 	PROJECTILE_PHOTON = 11
+}
+
+public enum BaboGrabbableItem
+{
+	ITEM_LIFE_PACK = 1,
+	ITEM_WEAPON = 2,
+	ITEM_GRENADE = 3
 }

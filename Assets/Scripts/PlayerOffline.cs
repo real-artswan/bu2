@@ -14,10 +14,10 @@ public class PlayerOffline : MonoBehaviour {
 	void Update () {
         if (Input.GetKeyDown("space"))
         {
-            if (mainWeapon.weaponType == BaboMainWeapon.WEAPON_PHOTON_RIFLE)
-                mainWeapon.setWeapon(BaboMainWeapon.WEAPON_SMG);
+            if (mainWeapon.weaponType == BaboWeapon.WEAPON_PHOTON_RIFLE)
+                mainWeapon.setWeapon(BaboWeapon.WEAPON_SMG);
             else
-                mainWeapon.setWeapon((BaboMainWeapon)((int)mainWeapon.weaponType + 1));
+                mainWeapon.setWeapon((BaboWeapon)((int)mainWeapon.weaponType + 1));
         }
 
     }

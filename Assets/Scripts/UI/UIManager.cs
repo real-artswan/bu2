@@ -36,7 +36,7 @@ public class UIManager : MonoBehaviour {
     public void setMainWeapon(Toggle sender)
     {
         if (sender.isOn)
-            gameState.nextWeapon = (BaboMainWeapon)Enum.Parse(typeof(BaboMainWeapon), sender.name);
+            gameState.nextWeapon = (BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name);
     }
 
     public void askAssignTeam(Button sender)

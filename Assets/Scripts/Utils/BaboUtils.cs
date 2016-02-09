@@ -39,8 +39,41 @@ public static class BaboUtils
 		return new Vector3 (array [0], array [1], array [2]);
 	}
 
-	public static Vector3 vectorFromArray(byte[] array) {
+    public static Vector3 vectorFromArray(float[] array)
+    {
+        return new Vector3(array[0], array[1], array[2]);
+    }
+
+    public static Vector3 vectorFromArray(byte[] array) {
 		return new Vector3 (array [0], array [1], array [2]);
 	}
+
+    public static string bytesToString(byte[] bytes)
+    {
+        return Encoding.ASCII.GetString(bytes);
+    }
+
+    public static byte[] stringToBytes(string str)
+    {
+        return Encoding.ASCII.GetBytes(str);
+    }
+
+    public static Color fromBaboColor(byte[] colorArray)
+    {
+        return new Color(
+                ((float)colorArray[0]) / 255.0f,
+                ((float)colorArray[1]) / 255.0f,
+                ((float)colorArray[2]) / 255.0f);
+    }
+
+    public static byte[] toBaboColor(Color color)
+    {
+        byte[] r = new byte[3];
+        r[0] = (byte)(color.r * 255f);
+        r[1] = (byte)(color.g * 255f);
+        r[2] = (byte)(color.b * 255f);
+
+        return r;
+    }
 
 }

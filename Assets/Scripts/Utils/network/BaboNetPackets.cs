@@ -150,6 +150,17 @@ namespace BaboNetwork
         public byte[] greenDecal;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public byte[] blueDecal;
+
+        public net_clsv_spawn_request(bool init)
+        {
+            playerID = 0;
+            weaponID = 0;
+            meleeID = 0;
+            skin = new byte[7];
+            redDecal = new byte[3];
+            greenDecal = new byte[3];
+            blueDecal = new byte[3];
+        }
     };
 
     // Le client tire du fusil (activitй commune chez les cocassien)

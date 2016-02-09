@@ -17,8 +17,8 @@ public class PlayerMovement : MonoBehaviour {
 
     void Update()
     {
-        if ((gameState.thisPlayer.playerState == null) || (gameState.thisPlayer.playerState.teamID == BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
-            || (gameState.thisPlayer.playerState.teamID == BaboPlayerTeamID.PLAYER_TEAM_AUTO_ASSIGN))
+        if ((gameState.thisPlayer == null) || (gameState.thisPlayer.teamID == BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
+            || (gameState.thisPlayer.teamID == BaboPlayerTeamID.PLAYER_TEAM_AUTO_ASSIGN))
             return;
         //move
         movePlayer(CrossPlatformInputManager.GetAxis("UpDown"), Input.GetAxis("LeftRight"));

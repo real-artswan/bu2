@@ -11,8 +11,8 @@ public class CanvasHUD : MonoBehaviour {
 	public Text redTeamScore;
 	public Text centerMessage;
 	public Text topCounter;
-	public GameObject nades;
-	public GameObject molotovs;
+	public Text nades;
+	public Text molotovs;
 	public Slider health;
 	public Slider heatWpn;
 	public GameObject fpsCounter;
@@ -34,8 +34,8 @@ public class CanvasHUD : MonoBehaviour {
 		switch (gameState.getGameType()) {
 			case BaboGameType.GAME_TYPE_DM:
 				topCounter.gameObject.SetActive(
-					(gameState.thisPlayer.playerState != null) &&
-					(gameState.thisPlayer.playerState.teamID != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR));
+					(gameState.thisPlayer != null) &&
+					(gameState.thisPlayer.teamID != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR));
 				setFlagsActive(false);
 				break;
 			case BaboGameType.GAME_TYPE_TDM:
@@ -45,11 +45,11 @@ public class CanvasHUD : MonoBehaviour {
 				setFlagsActive(true);
 				break;
 		}
-		if ((gameState.thisPlayer.playerState != null) && (gameState.thisPlayer.playerState.teamID != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)) {
+		if ((gameState.thisPlayer != null) && (gameState.thisPlayer.teamID != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)) {
 			nades.gameObject.SetActive(true);
 			molotovs.gameObject.SetActive(true);
 			health.gameObject.SetActive(true);
-			heatWpn.gameObject.SetActive(gameState.thisPlayer.playerState.mainWeapon == BaboMainWeapon.WEAPON_CHAIN_GUN);
+			heatWpn.gameObject.SetActive(gameState.thisPlayer.mainWeapon.weaponType == BaboWeapon.WEAPON_CHAIN_GUN);
 		}
 		else
 		{

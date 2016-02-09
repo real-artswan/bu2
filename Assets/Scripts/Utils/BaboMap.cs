@@ -29,7 +29,7 @@ namespace Utils
         private byte[] author_name_buff = new byte[] { }; //25 bytes max
         public String author_name
         {
-            get { return Encoding.ASCII.GetString(author_name_buff); }
+            get { return BaboUtils.bytesToString(author_name_buff); }
         }
 
         //To add dirt

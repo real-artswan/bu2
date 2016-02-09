@@ -8,8 +8,8 @@ public class MainWeapon : MonoBehaviour {
 	private List<Transform> flashes = new List<Transform>();
 	//private GameObject bulletModel;
 	private GameObject weaponObject;
-    internal BaboMainWeapon _weaponType;
-    internal BaboMainWeapon weaponType { get { return _weaponType; } }
+    internal BaboWeapon _weaponType;
+    internal BaboWeapon weaponType { get { return _weaponType; } }
     internal Transform owner = null;
     private GameObject bullet;
     public float speedOfBullet = 20;
@@ -30,7 +30,7 @@ public class MainWeapon : MonoBehaviour {
 	//private Coroutine flashCoRoutine = null;
 
 	public void fire() {
-        if (weaponType == BaboMainWeapon.WEAPON_NO)
+        if (weaponType == BaboWeapon.WEAPON_NO)
             return;
         //if (flashCoRoutine == null)
 			//flashCoRoutine = StartCoroutine(flash());
@@ -87,7 +87,7 @@ public class MainWeapon : MonoBehaviour {
 		//flashCoRoutine = null;
 	}
 
-	public void setWeapon(BaboMainWeapon weapon) {
+	public void setWeapon(BaboWeapon weapon) {
 		_weaponType = weapon;
 
 		//clean previouse weapon data
@@ -96,7 +96,7 @@ public class MainWeapon : MonoBehaviour {
 		weaponObject = null;
 		flashes.Clear();
 
-		if (weaponType == BaboMainWeapon.WEAPON_NO)
+		if (weaponType == BaboWeapon.WEAPON_NO)
 			return;
 		//load new weapon data
 
@@ -104,7 +104,7 @@ public class MainWeapon : MonoBehaviour {
 		GameObject weaponModel = Resources.Load<GameObject>("models/MainWeapons/" + _weaponType.ToString());
 		if (weaponModel == null) {
 			Debug.Log("Can not load weapon model");
-            _weaponType = BaboMainWeapon.WEAPON_NO;
+            _weaponType = BaboWeapon.WEAPON_NO;
             return;
 		}
 		weaponObject = GameObject.Instantiate(weaponModel);
@@ -124,7 +124,7 @@ public class MainWeapon : MonoBehaviour {
 
     void OnDrawGizmos()
     {
-        if (_weaponType == BaboMainWeapon.WEAPON_NO)
+        if (_weaponType == BaboWeapon.WEAPON_NO)
             return;
         /*Debug.DrawLine(transform.position, camController.cursorPosInWorld, Color.black);
         if (flashes.Count > 0)
