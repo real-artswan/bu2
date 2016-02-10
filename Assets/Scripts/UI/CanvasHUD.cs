@@ -49,7 +49,7 @@ public class CanvasHUD : MonoBehaviour {
 			nades.gameObject.transform.parent.gameObject.SetActive(true);
 			molotovs.gameObject.transform.parent.gameObject.SetActive(true);
 			health.gameObject.SetActive(true);
-			heatWpn.gameObject.SetActive(gameState.thisPlayer.mainWeapon.weaponType == BaboWeapon.WEAPON_CHAIN_GUN);
+			heatWpn.gameObject.SetActive(gameState.thisPlayer.getWeaponType() == BaboWeapon.WEAPON_CHAIN_GUN);
 		}
 		else
 		{

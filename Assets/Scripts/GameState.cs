@@ -145,7 +145,7 @@ public class GameState: MonoBehaviour
 		expl.Play();
     }
 
-	internal void spawnImpact(Vector3 position1, Vector3 position2, Vector3 normal, BaboWeapon shootWeapon, float damage, BaboPlayerTeamID teamID) {
+	internal void spawnImpact(Vector3 position1, Vector3 position2, Vector3 normal, BaboWeapon shootWeapon, BaboPlayerTeamID teamID) {
 		Color trailColor = Color.black;
 		switch (shootWeapon){
 			case BaboWeapon.WEAPON_FLAME_THROWER:
@@ -174,7 +174,7 @@ public class GameState: MonoBehaviour
 						trailColor = new Color(0.9f, 0.5f, 0.5f, 1);
 						break;
 				}
-				trails.Add(new Trail(position1, position2, damage, trailColor, damage * 4, 0));
+				//trails.Add(new Trail(position1, position2, damage, trailColor, damage * 4, 0));
 				break;
 		}
         //spawn shot's glow and smoke

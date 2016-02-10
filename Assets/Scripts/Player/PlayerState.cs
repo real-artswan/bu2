@@ -8,13 +8,13 @@ public class PlayerState: MonoBehaviour {
     public GameObject molotovModel;
 
     public BaboBody body;
-    public MainWeapon mainWeapon;
     public SecondaryWeapon secondaryWeapon;
     public Backpack backpack;
 
     public static int MAX_NADES = 3;
     public static int MAX_MOLOTOVS = 1;
 
+    internal MainWeapon mainWeapon;
     internal string playerName = "";
     internal byte playerID = 0;
     internal Int32 netID = 0;
@@ -43,8 +43,9 @@ public class PlayerState: MonoBehaviour {
     private bool spawnRequested = false;
     private int grenadeDelay = 0;
     private int meleeDelay = 0;
-	internal BaboWeapon nextSpawnWeapon = BaboWeapon.WEAPON_SMG;
-	internal BaboWeapon nextSecondaryWeapon = BaboWeapon.KNIVES;
+    private BaboWeapon currentWeapon = BaboWeapon.WEAPON_NO;
+    internal BaboWeapon nextSpawnWeapon = BaboWeapon.WEAPON_NO;
+	internal BaboWeapon nextSecondaryWeapon = BaboWeapon.WEAPON_NO;
 
 	internal CoordFrame currentCF = new CoordFrame();
 	
@@ -102,7 +103,7 @@ public class PlayerState: MonoBehaviour {
         _molotovs = MAX_MOLOTOVS;
 
 
-        mainWeapon.setWeapon(nextSpawnWeapon);
+        setWeaponType(nextSpawnWeapon);
         secondaryWeapon.setWeapon(nextSecondaryWeapon);
 
         //if (isThisPlayer) map->setCameraPos(spawnPoint);
@@ -147,4 +148,44 @@ public class PlayerState: MonoBehaviour {
 
 		firedShowDelay = 0;
 	}
+
+    public void setWeaponType(BaboWeapon weapon)
+    {
+        if (currentWeapon == weapon)
+            return;
+        currentWeapon = weapon;
+        if (Debug.isDebugBuild)
+            Debug.Log("Trying to load " + weapon.ToString());
+        //clean previouse weapon data
+        if (mainWeapon != null)
+            GameObject.DestroyObject(mainWeapon.gameObject);
+        mainWeapon = null;
+
+        if (currentWeapon == BaboWeapon.WEAPON_NO)
+            return;
+        //load new weapon data
+        //yes, weapons prefabs must be named the same as enum values
+        GameObject weaponModel = Resources.Load<GameObject>("models/MainWeapons/" + currentWeapon.ToString());
+        if (weaponModel == null)
+        {
+            if (Debug.isDebugBuild)
+                Debug.LogWarning("Can not load weapon model");
+            currentWeapon = BaboWeapon.WEAPON_NO;
+            return;
+        }
+        GameObject weaponObject = Instantiate(weaponModel);
+        weaponObject.transform.parent = gameObject.transform;
+        weaponObject.transform.localRotation = new Quaternion(0, 180, 0, 0);
+        weaponObject.transform.localPosition = new Vector3(0, -0.5f, 0);
+        weaponObject.transform.localScale = new Vector3 (0.75f, 0.75f, 0.75f);
+        mainWeapon = weaponObject.GetComponent<MainWeapon>();
+        if (mainWeapon == null)
+            if (Debug.isDebugBuild)
+                Debug.LogWarning("Weapon model doesn't contain MainWeapon");
+    }
+
+    public BaboWeapon getWeaponType()
+    {
+        return currentWeapon;
+    }
 }

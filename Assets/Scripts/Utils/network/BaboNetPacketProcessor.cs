@@ -219,7 +219,7 @@ namespace BaboNetwork
             if (gameState.thisPlayer == whoShoot)
             { //my shoot
                 //spawn fire
-                gameState.spawnImpact(p1, p2, normal, shootWeapon, gameState.thisPlayer.mainWeapon.damage, gameState.thisPlayer.teamID);
+                gameState.spawnImpact(p1, p2, normal, shootWeapon, gameState.thisPlayer.teamID);
             }
 			else
 			{
@@ -340,7 +340,7 @@ namespace BaboNetwork
 					}
 					break;
 				case BaboGrabbableItem.ITEM_WEAPON:
-					ps.mainWeapon.setWeapon((BaboWeapon)parsedPacket.itemFlag);
+					ps.setWeaponType((BaboWeapon)parsedPacket.itemFlag);
 					if (gameState.thisPlayer == ps) {
 						//dksPlaySound(gameVar.sfx_equip, -1, 255);
 					}
@@ -510,7 +510,7 @@ namespace BaboNetwork
 			if ((gameState.getGameType() != BaboGameType.GAME_TYPE_DM) || (gameState.getGameType() != BaboGameType.GAME_TYPE_SND))
 				teamColor = ps.teamID;
 			ps.body.updateSkin(teamColor);
-			ps.mainWeapon.setWeapon((BaboWeapon)playerSpawn.weaponID);
+			ps.setWeaponType((BaboWeapon)playerSpawn.weaponID);
 			ps.secondaryWeapon.setWeapon((BaboWeapon)playerSpawn.meleeID);
 			ps.prepareToSpawn(new Vector3((float)playerSpawn.position[0] / 10.0f, (float)playerSpawn.position[1] / 10.0f, (float)playerSpawn.position[2] / 10.0f));
 		}
@@ -535,7 +535,7 @@ namespace BaboNetwork
 			ps.damage = (int)parsedPacket.damage;
 			ps.status = (BaboPlayerStatus)parsedPacket.status;
 			ps.teamID = (BaboPlayerTeamID)parsedPacket.teamID;
-			ps.mainWeapon.setWeapon((BaboWeapon)parsedPacket.weaponID);
+			ps.setWeaponType((BaboWeapon)parsedPacket.weaponID);
 			ps.life = parsedPacket.life;
 			ps.dmg = parsedPacket.dmg;
 			parsedPacket.skin[6] = 0;

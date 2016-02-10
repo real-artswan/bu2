@@ -27,6 +27,6 @@ public class SecondaryWeapon : MonoBehaviour
 
     internal void shoot()
     {
-        throw new NotImplementedException();
+        //TODO
     }
 }
