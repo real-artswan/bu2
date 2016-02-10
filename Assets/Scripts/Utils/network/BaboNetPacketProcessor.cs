@@ -199,31 +199,32 @@ namespace BaboNetwork
 		}
 
 		private void doSvclPlayerShoot(net_svcl_player_shoot playerShoot) {
+            if (gameState.thisPlayer == null) //my player must be here at this moment
+                return;
+            PlayerState whoShoot;
+            if (!gameState.players.TryGetValue(playerShoot.playerID, out whoShoot))
+                return;
+
 			BaboWeapon shootWeapon = (BaboWeapon)playerShoot.weaponID;
-			Vector3 p1 = BaboUtils.vectorFromArray(playerShoot.p1) / 100.0f;
-			Vector3 p2 = BaboUtils.vectorFromArray(playerShoot.p2) / 100.0f;
-			Vector3 normal = BaboUtils.vectorFromArray(playerShoot.normal) / 120.0f;
+			Vector3 p1 = BaboUtils.fromBaboPosition(playerShoot.p1, gameState.map.wShift, gameState.map.hShift);
+			Vector3 p2 = BaboUtils.fromBaboPosition(playerShoot.p2, gameState.map.wShift, gameState.map.hShift);
+            Vector3 normal = BaboUtils.vectorFromArray(playerShoot.normal) / 120.0f;
 			if (shootWeapon == BaboWeapon.WEAPON_MINIBOT_WEAPON)
 				return; //TODO
-			//is this shoot affected me
-			if (gameState.thisPlayer != null) {
-				if (gameState.thisPlayer.playerID == playerShoot.hitPlayerID) {
-					//shoot to me
-					Vector3 direction = Vector3.Normalize(p2 - p1);
-					gameState.thisPlayer.currentCF.vel += direction * gameState.serverVars.weaponsVars.vars[shootWeapon].damage * 2;
-				}
-				else {
-					if (gameState.thisPlayer.playerID == playerShoot.playerID) //my shoot
-						gameState.spawnImpact(p1, p2, normal, shootWeapon, gameState.thisPlayer.mainWeapon.damage, gameState.thisPlayer.teamID);
-				}
-			}
+            if (gameState.thisPlayer.playerID == playerShoot.hitPlayerID)
+            { //shoot to me
+                Vector3 direction = Vector3.Normalize(p2 - p1);
+                gameState.thisPlayer.currentCF.vel += direction * gameState.serverVars.weaponsVars.vars[shootWeapon].damage * 2;
+            }
+            if (gameState.thisPlayer == whoShoot)
+            { //my shoot
+                //spawn fire
+                gameState.spawnImpact(p1, p2, normal, shootWeapon, gameState.thisPlayer.mainWeapon.damage, gameState.thisPlayer.teamID);
+            }
 			else
 			{
-				PlayerState pShoot;
-				if (!gameState.players.TryGetValue(playerShoot.playerID, out pShoot))
-					return;
-				pShoot.firedShowDelay = 2;
-				pShoot.mainWeapon.shoot(p1, p2, normal, playerShoot.nuzzleID);
+				whoShoot.firedShowDelay = 2;
+				whoShoot.mainWeapon.shoot(p1, p2, normal, playerShoot.nuzzleID);
 			}
 		}
 

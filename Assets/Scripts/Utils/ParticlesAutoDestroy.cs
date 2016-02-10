@@ -5,7 +5,7 @@ public class ParticlesAutoDestroy : MonoBehaviour {
 	private float timeLeft;
 	public void Awake() {
 		ParticleSystem system = GetComponent<ParticleSystem>();
-		timeLeft = system.startLifetime;
+		timeLeft = system.duration;
 	}
 	public void Update() {
 		timeLeft -= Time.deltaTime;

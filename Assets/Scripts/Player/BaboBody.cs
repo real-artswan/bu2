@@ -10,7 +10,7 @@ public class BaboBody : MonoBehaviour {
     public string skin = "";
 
     private Texture2D origTexture;
-    private string lastSkin = "";
+    private string skinInUse = "";
     private Material tmpMat;
 
     //if team is not RED or BLUE then skin will not be colorized to team color
@@ -22,8 +22,11 @@ public class BaboBody : MonoBehaviour {
             tmpMat = new Material(rend.sharedMaterial);
             rend.sharedMaterial = tmpMat;
         }
-        if (skin != lastSkin)
+        if (skin != skinInUse)
+        {
             origTexture = Resources.Load<Texture2D>("skins/" + skin);
+            skinInUse = skin;
+        }
 
         Color redDecalT;
         Color greenDecalT;

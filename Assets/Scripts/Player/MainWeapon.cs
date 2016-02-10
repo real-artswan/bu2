@@ -134,6 +134,7 @@ public class MainWeapon : MonoBehaviour {
     }
 
 	public void shoot(Vector3 position1, Vector3 position2, Vector3 normal, byte nuzzleID) {
+        Debug.LogFormat("Shoot: {0}->{1}, n {2}, id {3}", position1.ToString(), position2.ToString(), normal.ToString(), nuzzleID);
 		
 	}
 }

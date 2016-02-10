@@ -9,7 +9,8 @@ public class GameState: MonoBehaviour
 {
 	public GameObject baboModel;
 	public ParticleSystem explosionModel;
-	public NetConnection connection;
+    public ParticleSystem bulletShootModel;
+    public NetConnection connection;
 	public GlobalGameVariables gameVars;
 	public GlobalServerVariables serverVars;
     public UIManager uiManager;
@@ -63,6 +64,9 @@ public class GameState: MonoBehaviour
     }
 
 	void Update() {
+        //draw trails
+        //draw projectiles
+        //update UI
         if (hud.gameObject.activeSelf) {
             if ((gameVars.showPing) && (thisPlayer != null))
             {
@@ -173,6 +177,9 @@ public class GameState: MonoBehaviour
 				trails.Add(new Trail(position1, position2, damage, trailColor, damage * 4, 0));
 				break;
 		}
-		//spawn shot's glow and smoke
-	}
+        //spawn shot's glow and smoke
+        ParticleSystem shoot = Instantiate(explosionModel, position1, Quaternion.LookRotation(normal)) as ParticleSystem;
+        //expl.transform.localScale = expl.transform.localScale * radius;
+        shoot.Play();
+    }
 }
