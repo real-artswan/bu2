@@ -23,7 +23,7 @@ namespace Utils
         public List<Vector3> dm_spawns = new List<Vector3>();
         public List<Vector3> blue_spawns = new List<Vector3>();
         public List<Vector3> red_spawns = new List<Vector3>();
-        public short theme = 0;
+        public BaboMapTheme theme = BaboMapTheme.GRASS;
         public short weather = 0;
 
         private byte[] author_name_buff = new byte[] { }; //25 bytes max
@@ -130,7 +130,7 @@ namespace Utils
                     }
                 case 20201:
                     {
-                        theme = reader.ReadInt16();
+                        theme = (BaboMapTheme)reader.ReadInt16();
                         weather = reader.ReadInt16();
 
                         readCellsData(reader);
@@ -166,7 +166,7 @@ namespace Utils
                         author_name_buff = reader.ReadBytes(25);
 
                         // Note: we DO NOT want to overwrite the author field if it's being edited
-                        theme = reader.ReadInt16();
+                        theme = (BaboMapTheme)reader.ReadInt16();
                         weather = reader.ReadInt16();
 
                         readCellsData(reader);
@@ -224,32 +224,32 @@ namespace Utils
             Debug.Log(String.Format("Map size: {0}x{1}", width, height));
         }
     }
-	public enum BaboMapThemes
+	public enum BaboMapTheme
 	{
 		// Classic themes
-		THEME_GRASS,
-		THEME_SNOW,
-		THEME_SAND,
-		THEME_CITY,
-		THEME_MODERN,
-		THEME_LAVA,
-		THEME_ANIMAL,
-		THEME_ORANGE,
+		GRASS,
+		SNOW,
+		SAND,
+		CITY,
+		MODERN,
+		LAVA,
+		ANIMAL,
+		ORANGE,
 		// Pacifist's themes (WOW!)
-		THEME_CORE,
-		THEME_FROZEN,
-		THEME_GRAIN,
-		THEME_MEDIEVAL,
-		THEME_METAL,
-		THEME_RAINY,
-		THEME_REAL,
-		THEME_ROAD,
-		THEME_ROCK,
-		THEME_SAVANA,
-		THEME_SOFT,
-		THEME_STREET,
-		THEME_TROPICAL,
-		THEME_WINTER,
-		THEME_WOODEN
+		CORE,
+		FROZEN,
+		GRAIN,
+		MEDIEVAL,
+		METAL,
+		RAINY,
+		REAL,
+		ROAD,
+		ROCK,
+		SAVANA,
+		SOFT,
+		STREET,
+		TROPICAL,
+		WINTER,
+		WOODEN
 	}
 }

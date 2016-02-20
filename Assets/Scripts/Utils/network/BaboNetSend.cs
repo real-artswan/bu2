@@ -11,8 +11,8 @@ namespace BaboNetwork
         {
             net_clsv_spawn_request spawnRequest = new net_clsv_spawn_request(true);
             spawnRequest.playerID = ps.playerID;
-            spawnRequest.weaponID = (byte)ps.nextSpawnWeapon;
-            spawnRequest.meleeID = (byte)ps.nextSecondaryWeapon;
+            spawnRequest.weaponID = (byte)ps.getWeaponType();
+            spawnRequest.meleeID = (byte)ps.getWeapon2Type();
             byte[] a = BaboUtils.stringToBytes(ps.body.skin);
             Array.Copy(a, spawnRequest.skin, a.Length); //max 6 + \0
             

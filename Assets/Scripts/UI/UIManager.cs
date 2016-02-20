@@ -35,8 +35,8 @@ public class UIManager : MonoBehaviour {
 
     public void setMainWeapon(Toggle sender)
     {
-        if (sender.isOn)
-            gameState.nextWeapon = (BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name);
+        if (sender.isOn && (gameState.thisPlayer != null))
+            gameState.thisPlayer.setWeaponType((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
     }
 
     public void askAssignTeam(Button sender)
@@ -59,7 +59,9 @@ public class UIManager : MonoBehaviour {
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
         HUD.SetActive(true);
         gameMenu.SetActive(true);
-        Transform wToggle = mainWeapons.transform.FindChild(gameState.nextWeapon.ToString());
+        Transform wToggle = null;
+        if (gameState.thisPlayer != null)
+            mainWeapons.transform.FindChild(gameState.thisPlayer.getWeaponType().ToString());
         if (wToggle != null)
         {
             wToggle.gameObject.GetComponent<Toggle>().isOn = true;

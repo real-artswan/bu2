@@ -171,9 +171,9 @@ namespace BaboNetwork
         public byte playerID; // Le ID du joueur
         public byte weaponID; // Le ID du type de gun
         public byte nuzzleID; // le ID du nuzzle du fusil qui l'a tirй
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public short[] p1; // Le point du dйbut du ray
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public short[] p2; // Le point de la fin du ray
     };
 
@@ -332,9 +332,9 @@ namespace BaboNetwork
         public byte hitPlayerID; // Le ID du joueur qu'on a touchй, si -1 on a touchй un mur
         public byte nuzzleID; // le ID du nuzzle du fusil qui l'a tirй (pour savoir oщ spawner le feu)
         public byte weaponID; // Le ID du type de gun
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public short[] p1; // Le point du dйbut du ray
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public short[] p2; // Le point de la fin du ray (point d'impact)
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public byte[] normal; // La normal de l'impact
@@ -633,7 +633,7 @@ namespace BaboNetwork
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public short[] position; // La position initial du projectile
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-        public byte[] vel; // La velocitйe initial du projectile
+        public sbyte[] vel; // La velocitйe initial du projectile
         public Int32 uniqueID;
         //	public Int32 uniqueProjectileID;
     };

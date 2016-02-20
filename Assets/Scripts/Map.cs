@@ -1,79 +1,91 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.IO;
+using UnityEngine;
 using Utils;
-using System.IO;
-using UnityEngine.UI;
 
-public class Map : MonoBehaviour {
+public class Map : MonoBehaviour
+{
     public CameraController cameraController;
-    public GameObject floor;
-    public GameObject wallsParent;
+    public Transform floor;
+    public Transform wallsParent;
+    public Transform spawnsParent;
     public string loadMapFromFile = "";
-	public RawImage minimapControl;
+    public Material minimap;
+    public int minimapScaleFactor = 5;
 
+    internal GameObject blueFlagPod;
+    internal GameObject redFlagPod;
     internal string mapName = "";
     internal string authorName = "";
     internal Stream mapBuffer = new MemoryStream();
-	internal BaboFlagsState flagsState = new BaboFlagsState();
     internal bool mapCreated = false;
     internal float mapWidth = 0;
     internal float mapHeight = 0;
-	internal float wShift = 0;
-	internal float hShift = 0;
-    void Start()
-    {
+    internal float wShift = 0;
+    internal float hShift = 0;
+    void Start() {
+        //if (minimap == null)
+        //minimap = new Material(Shader.Find("Standard"));
         if (loadMapFromFile == "")
             return;
         FileStream fs = File.Open(loadMapFromFile, FileMode.Open);
-        try
-        {
+        try {
             mapBuffer = fs;
             createMap();
         }
-        finally
-        {
+        finally {
             fs.Close();
         }
     }
 
-	internal void createMap()
-	{
+    internal void createMap() {
         //clear existing map before load new
         clearMap();
 
         //parse original map
         BaboMap baboMap = new BaboMap(mapBuffer);
-		//clear buffer
-		mapBuffer = new MemoryStream();
+        //clear buffer
+        mapBuffer = new MemoryStream();
         //get data
         mapWidth = baboMap.width;
         mapHeight = baboMap.height;
         authorName = baboMap.author_name;
-		MapConverter.CreateUnityMap(baboMap, this);
-		if (minimapControl != null) {
-			Texture2D minimap = MapConverter.createMinimap (baboMap, 5, minimapControl.color);
-			Material mat = new Material (minimapControl.material);
-			mat.mainTexture = minimap;
-			minimapControl.material = mat;
-			minimapControl.SetNativeSize ();
-			RectTransform rt = minimapControl.gameObject.GetComponent<RectTransform> ();
-			rt.anchoredPosition = new Vector2 (rt.rect.width / 2 + 10, rt.rect.height / 2 + 10);
-		}
+        MapConverter.CreateUnityMap(baboMap, this);
+        if (minimap != null) {
+            MapConverter.createMinimap(baboMap, minimapScaleFactor, ref minimap);
+        }
+
+        /*byte[] img = ((Texture2D)minimap.mainTexture).EncodeToPNG();
+        FileStream fs = File.Open(Path.ChangeExtension(loadMapFromFile, ".png"), FileMode.Create);
+        try {
+            fs.Write(img, 0, img.Length);
+        }
+        finally {
+            fs.Close();
+        }*/
 
         cameraController.gameObject.transform.rotation = Quaternion.Euler(90, 0, 0); //look to map
         cameraController.setCameraHeight(7);
         mapCreated = true;
     }
 
-    public void clearMap()
-    {
+    public void clearMap() {
         Camera.main.transform.rotation = Quaternion.Euler(0, 0, 0); //don't look to map
         mapHeight = 0;
         mapWidth = 0;
-        foreach (Transform child in wallsParent.transform)
-        {
-			Destroy(child.gameObject);
+        foreach (Transform child in wallsParent.transform) {
+            Destroy(child.gameObject);
         }
+        foreach (Transform child in spawnsParent.transform) {
+            Destroy(child.gameObject);
+        }
+        Destroy(blueFlagPod);
+        Destroy(redFlagPod);
+        Transform t = transform.FindChild("BlueObjective");
+        if (t != null)
+            Destroy(t.gameObject);
+        t = transform.FindChild("RedObjective");
+        if (t != null)
+            Destroy(t.gameObject);
         mapCreated = false;
     }
 }

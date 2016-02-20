@@ -1,49 +1,52 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+public enum BaboTeamColor
+{
+    BLUE = 0,
+    RED = 1
+}
+
 public class BaboFlagsState
 {
-	public enum FlagState {
-		RETURNED = -2,
-		ABANDONED = -1,
-		CAPTURED = 0,
-		STOLEN = 1
-	}
-	public Vector3 redPos;
-	public Vector3 bluePos;
-	public FlagState redState = FlagState.RETURNED;
-	public FlagState blueState = FlagState.RETURNED;
+    public class BaboFlagState
+    {
 
-	public FlagState stateByID(int id)
-	{
-		switch (id)
-		{
-			case 0:
-				return blueState;
-			case 1:
-				return redState;
-		}
-		return FlagState.RETURNED;
-	}
+        public Vector3 position = Vector3.zero;
+        public FlagStateID state = FlagStateID.ON_POD;
 
-	public Vector3 posByID(int id)
-	{
-		switch (id)
-		{
-			case 0:
-				return bluePos;
-			case 1:
-				return redPos;
-		}
-		return Vector3.zero;
-	}
+        public void reset()
+        {
+            state = FlagStateID.ON_POD;
+            position = Vector3.zero;
+        }
+    }
+
+    private BaboFlagState[] flagsStates = new BaboFlagState[2] { new BaboFlagState(), new BaboFlagState() };
+
+    public BaboFlagState this[BaboTeamColor color]
+    {
+        get {return flagsStates[(int)color]; }
+    }
+    public void reset()
+    {
+        foreach (BaboFlagState fs in flagsStates)
+            fs.reset();
+    }
+}
+
+public enum FlagStateID
+{
+    ON_POD = -2,
+    ON_FLOOR = -1,
+    //>=0 means flag captured == player's ID
 }
 
 public enum BaboPlayerTeamID
 {
 	PLAYER_TEAM_SPECTATOR = -1,
-	PLAYER_TEAM_BLUE = 0,
-	PLAYER_TEAM_RED = 1,
+	PLAYER_TEAM_BLUE = BaboTeamColor.BLUE,
+	PLAYER_TEAM_RED = BaboTeamColor.RED,
 	PLAYER_TEAM_AUTO_ASSIGN = 2
 }
 
@@ -51,7 +54,7 @@ public enum BaboPlayerStatus
 {
 	PLAYER_STATUS_ALIVE = 0,
 	PLAYER_STATUS_DEAD = 1,
-	PLAYER_STATUS_LOADING = 2
+    UNUSED_PLAYER_STATUS_LOADING = 2
 }
 
 public enum BaboWeapon

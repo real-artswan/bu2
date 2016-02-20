@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: ab350e4132e31e74c967a047c035e894
-timeCreated: 1453599745
+guid: bbb743d9c55e3754383b667ea06059a0
+timeCreated: 1455867133
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
@@ -18,7 +18,7 @@ ModelImporter:
     4300000: Box01
     9500000: //RootNode
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
   animations:
@@ -41,8 +41,8 @@ ModelImporter:
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 0.5
-    meshCompression: 0
+    globalScale: 1
+    meshCompression: 1
     addColliders: 0
     importBlendShapes: 1
     swapUVChannels: 0
@@ -60,7 +60,7 @@ ModelImporter:
     normalSmoothAngle: 60
     normalImportMode: 0
     tangentImportMode: 3
-  importAnimation: 1
+  importAnimation: 0
   copyAvatar: 0
   humanDescription:
     human: []
@@ -75,7 +75,7 @@ ModelImporter:
     rootMotionBoneName: 
     hasTranslationDoF: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 2
+  animationType: 0
   humanoidOversampling: 1
   additionalBone: 0
   userData: 

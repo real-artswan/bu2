@@ -17,6 +17,7 @@ public class CanvasHUD : MonoBehaviour {
 	public Slider heatWpn;
 	public GameObject fpsCounter;
 	public PingGraph pingGraph;
+    public RawImage minimapControl;
 
 	private void setFlagsActive(bool active)
 	{
