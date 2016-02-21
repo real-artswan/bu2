@@ -6,12 +6,12 @@ namespace BaboNetwork
 {
     public class BaboNetPacketProcessor
     {
-        private string myMac = "";
         public static ushort GAME_VERSION_CL = 21100;
         private GameState gameState = null;
 
         private AddPacketCallback sendPacketCallback = null;
         private bool isDownloadingMap = false;
+        private byte[] myMac;
 
         private void doSendPacket(BaboRawPacket rawPacket) {
             if (sendPacketCallback != null)
@@ -22,7 +22,7 @@ namespace BaboNetwork
             this.gameState = gameState;
             this.sendPacketCallback = doSendPacket;
 
-            myMac = BaboUtils.GetMac();
+            myMac = Encoding.ASCII.GetBytes(BaboUtils.GetMac());
         }
 
         public bool processPacket(BaboRawPacket rawPacket) {
@@ -47,8 +47,6 @@ namespace BaboNetwork
                     break;
                 case BaboPacketTypeID.NET_SVCL_AUTOBALANCE:
                     doAutoBalance();
-                    break;
-                case BaboPacketTypeID.NET_SVCL_END_VOTE:
                     break;
                 case BaboPacketTypeID.NET_SVCL_UPDATE_VOTE:
                     doUpdateVote((net_svcl_update_vote)parsedPacket);
@@ -97,8 +95,6 @@ namespace BaboNetwork
                     break;
                 case BaboPacketTypeID.NET_CLSV_SVCL_VOTE_REQUEST:
                     doVoteRequest((net_clsv_svcl_vote_request)parsedPacket);
-                    break;
-                case BaboPacketTypeID.NET_CLSV_MAP_REQUEST:
                     break;
                 case BaboPacketTypeID.NET_SVCL_MAP_CHUNK:
                     doMapChunk((net_svcl_map_chunk)parsedPacket);
@@ -332,7 +328,7 @@ namespace BaboNetwork
                 return;
             switch ((BaboGrabbableItem)parsedPacket.itemType) {
                 case BaboGrabbableItem.ITEM_LIFE_PACK:
-                    ps.life += .5f;
+                    ps.life += 0.5f;
 
                     if (gameState.thisPlayer == ps) {
                         //dksPlaySound(gameVar.sfx_lifePack, -1, 255);
@@ -355,7 +351,7 @@ namespace BaboNetwork
         }
 
         private void doSvChange(net_svcl_sv_change parsedPacket) {
-            gameState.serverVars.setRawVar(BaboUtils.bytesToString(parsedPacket.svChange));
+            gameState.serverVars.setRawVar(BaboUtils.baboBytesToString(parsedPacket.svChange, true));
         }
 
         private void doUpdateVote(net_svcl_update_vote parsedPacket) {
@@ -376,7 +372,7 @@ namespace BaboNetwork
             gameState.voting.no = 0;
             gameState.voting.yes = 0;
             gameState.voting.playerID = parsedPacket.playerID;
-            gameState.voting.what = BaboUtils.bytesToString(parsedPacket.vote);
+            gameState.voting.what = BaboUtils.baboBytesToString(parsedPacket.vote, true);
         }
 
         private void doMapChunk(net_svcl_map_chunk parsedPacket) {
@@ -414,7 +410,7 @@ namespace BaboNetwork
                 return;
             if ((parsedPacket.teamID <= (int)BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
                 || (parsedPacket.teamID == (int)gameState.thisPlayer.teamID)) {
-                gameState.chatMessages.Add(BaboUtils.bytesToString(parsedPacket.message));
+                gameState.chatMessages.Add(BaboUtils.baboBytesToString(parsedPacket.message, true));
             }
         }
 
@@ -423,10 +419,9 @@ namespace BaboNetwork
                 //send my player info
                 net_clsv_svcl_player_info playerInfo = new net_clsv_svcl_player_info(true);
 
-                byte[] mac = Encoding.ASCII.GetBytes(myMac);
-                Array.Copy(mac, playerInfo.macAddr, playerInfo.macAddr.Length); //use 6 bytes only here
+                Array.Copy(myMac, playerInfo.macAddr, playerInfo.macAddr.Length); //use 6 bytes only here
                 playerInfo.playerID = gameState.thisPlayer.playerID;
-                byte[] name = Encoding.ASCII.GetBytes(gameState.thisPlayer.playerName);
+                byte[] name = BaboUtils.stringToBaboBytes(gameState.gameVars.playerName.text, true);
                 Array.Copy(name, playerInfo.playerName, name.Length);
 
                 doSendPacket(new BaboRawPacket(playerInfo));
@@ -444,7 +439,7 @@ namespace BaboNetwork
         private void doPlayerChangeName(net_clsv_svcl_player_change_name parsedPacket) {
             PlayerState ps;
             if (gameState.players.TryGetValue(parsedPacket.playerID, out ps)) {
-                string newName = BaboUtils.bytesToString(parsedPacket.playerName);
+                string newName = BaboUtils.baboBytesToString(parsedPacket.playerName, true);
                 gameState.eventMessages.Add(String.Format(l10n.playerChangedHisNameFor, ps.playerName, newName));
                 ps.playerName = newName;
             }
@@ -464,7 +459,7 @@ namespace BaboNetwork
             if (ps == gameState.thisPlayer)
                 return;
             updateSkin.skin[6] = 0;
-            ps.body.skin = BaboUtils.bytesToString(updateSkin.skin);
+            ps.body.skin = BaboUtils.baboBytesToString(updateSkin.skin, false);
             ps.body.blueDecal = BaboUtils.fromBaboColor(updateSkin.blueDecal);
             ps.body.greenDecal = BaboUtils.fromBaboColor(updateSkin.greenDecal);
             ps.body.redDecal = BaboUtils.fromBaboColor(updateSkin.redDecal);
@@ -503,7 +498,7 @@ namespace BaboNetwork
             if (!gameState.players.TryGetValue(playerSpawn.playerID, out ps))
                 return;
             playerSpawn.skin[6] = 0; // Au cas qu'un hacker s'amuse
-            ps.body.skin = BaboUtils.bytesToString(playerSpawn.skin);
+            ps.body.skin = BaboUtils.baboBytesToString(playerSpawn.skin, false);
             ps.body.blueDecal = BaboUtils.fromBaboColor(playerSpawn.blueDecal);
             ps.body.greenDecal = BaboUtils.fromBaboColor(playerSpawn.greenDecal);
             ps.body.redDecal = BaboUtils.fromBaboColor(playerSpawn.redDecal);
@@ -527,8 +522,8 @@ namespace BaboNetwork
             ps = PlayerState.createSelf(parsedPacket.playerID, gameState.baboModel);
 
             ps.netID = parsedPacket.babonetID;
-            ps.playerName = BaboUtils.bytesToString(parsedPacket.playerName);
-            ps.ip = BaboUtils.bytesToString(parsedPacket.playerIP);
+            ps.playerName = BaboUtils.baboBytesToString(parsedPacket.playerName, true);
+            ps.ip = BaboUtils.baboBytesToString(parsedPacket.playerIP, false);
             ps.kills = parsedPacket.kills;
             ps.deaths = (int)parsedPacket.deaths;
             ps.score = (int)parsedPacket.score;
@@ -541,7 +536,7 @@ namespace BaboNetwork
             ps.life = parsedPacket.life;
             ps.dmg = parsedPacket.dmg;
             parsedPacket.skin[6] = 0;
-            ps.body.skin = BaboUtils.bytesToString(parsedPacket.skin);
+            ps.body.skin = BaboUtils.baboBytesToString(parsedPacket.skin, false);
             ps.body.blueDecal = BaboUtils.fromBaboColor(parsedPacket.blueDecal);
             ps.body.greenDecal = BaboUtils.fromBaboColor(parsedPacket.greenDecal);
             ps.body.redDecal = BaboUtils.fromBaboColor(parsedPacket.redDecal);
@@ -558,8 +553,8 @@ namespace BaboNetwork
         private void doPlayerInfo(net_clsv_svcl_player_info parsedPacket) {
             PlayerState playerState;
             if (gameState.players.TryGetValue(parsedPacket.playerID, out playerState)) {
-                playerState.playerName = BaboUtils.bytesToString(parsedPacket.playerName);
-                playerState.ip = BaboUtils.bytesToString(parsedPacket.playerIP);
+                playerState.playerName = BaboUtils.baboBytesToString(parsedPacket.playerName, true);
+                playerState.ip = BaboUtils.baboBytesToString(parsedPacket.playerIP, false);
 
                 gameState.eventMessages.Add(String.Format(l10n.playerJoinedGame, playerState.playerName));
             }
@@ -580,7 +575,7 @@ namespace BaboNetwork
         }
 
         private void doMapList(net_svcl_map_list parsedPacket) {
-            gameState.eventMessages.Add(BaboUtils.bytesToString(parsedPacket.mapName));
+            gameState.eventMessages.Add(BaboUtils.baboBytesToString(parsedPacket.mapName, false));
         }
 
         private void requestMap(byte[] name) {
@@ -593,7 +588,7 @@ namespace BaboNetwork
         }
 
         private void doMapChange(net_svcl_map_change parsedPacket) {
-            gameState.map.mapName = BaboUtils.bytesToString(parsedPacket.mapName);
+            gameState.map.mapName = BaboUtils.baboBytesToString(parsedPacket.mapName, false);
             gameState.setGameType((BaboGameType)parsedPacket.gameType);
             requestMap(parsedPacket.mapName);
         }
@@ -683,7 +678,7 @@ namespace BaboNetwork
             //gameState.gotGameState = true;
 
             gameState.mapSeed = parsedPacket.mapSeed;
-            gameState.map.mapName = BaboUtils.bytesToString(parsedPacket.mapName);
+            gameState.map.mapName = BaboUtils.baboBytesToString(parsedPacket.mapName, false);
             BaboGameType gameType = (BaboGameType)parsedPacket.gameType;
             switch (gameType) {
                 case BaboGameType.GAME_TYPE_CTF:
@@ -747,7 +742,7 @@ namespace BaboNetwork
 
         private void doHashSeed(net_svcl_hash_seed parsedPacket) {
             // we receive an hash seed, we need to send a response back
-            byte[] hash = Encoding.ASCII.GetBytes(BaboUtils.GetMac());
+            byte[] hash = myMac;
 
             net_svcl_hash_seed_reply hash_seed = new net_svcl_hash_seed_reply();
 
@@ -769,8 +764,8 @@ namespace BaboNetwork
         }
 
         private void doBadChecksumEntity(net_svcl_bad_checksum_entity bce) {
-            gameState.eventMessages.Add(string.Format(l10n.badCheckSumEntity, bce.id, BaboUtils.bytesToString(bce.name),
-                BaboUtils.bytesToString(bce.playerIP)));
+            gameState.eventMessages.Add(string.Format(l10n.badCheckSumEntity, bce.id, BaboUtils.baboBytesToString(bce.name, false),
+                BaboUtils.baboBytesToString(bce.playerIP, false)));
         }
 
         private void doBadChecksumInfo(net_svcl_bad_checksum_info bci) {
@@ -778,7 +773,7 @@ namespace BaboNetwork
         }
 
         private void doConsole(BaboRawPacket parsedPacket) {
-            gameState.eventMessages.Add(BaboUtils.bytesToString(parsedPacket.data));
+            gameState.eventMessages.Add(BaboUtils.baboBytesToString(parsedPacket.data, false));
         }
 
         private void doAutoBalance() {

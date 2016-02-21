@@ -63,11 +63,13 @@ public static class BaboUtils
         return new Vector3(array[0], array[2], array[1]);
     }
 
-    public static string bytesToString(byte[] bytes) {
+    //TODO: support babo colors(convert babo colors to unity richtext)
+    public static string baboBytesToString(byte[] bytes, bool rtf) {
         return Encoding.ASCII.GetString(bytes);
     }
 
-    public static byte[] stringToBytes(string str) {
+    //TODO: support babo colors (convert unity richtext to babo colors)
+    public static byte[] stringToBaboBytes(string str, bool rtf) {
         return Encoding.ASCII.GetBytes(str);
     }
 
@@ -94,7 +96,18 @@ public static class BaboUtils
             case BaboPlayerTeamID.PLAYER_TEAM_RED:
                 return new Color(1, 0, 0, alpha);
             default:
-                return new Color(1, 1, 1, alpha);
+                return new Color(0.5f, 0.5f, 0.5f, 0.5f);
+        }
+    }
+
+    internal static string getTeamName(BaboPlayerTeamID team) {
+        switch (team) {
+            case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
+                return l10n.blueTeam;
+            case BaboPlayerTeamID.PLAYER_TEAM_RED:
+                return l10n.redTeam;
+            default:
+                return l10n.specTeam;
         }
     }
 }
