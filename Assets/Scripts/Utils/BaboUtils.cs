@@ -11,6 +11,24 @@ public static class BaboUtils
         return angle * Mathf.Sign(Vector3.Cross(a, b).y);
     }
 
+    internal static string getRoundStatus(BaboRoundState baboRoundState) {
+        switch (baboRoundState) {
+            case BaboRoundState.GAME_PLAYING:
+                return l10n.gamePlaying;
+            case BaboRoundState.GAME_BLUE_WIN:
+                return String.Format(l10n.teamWin, getTeamName(BaboPlayerTeamID.PLAYER_TEAM_BLUE));
+            case BaboRoundState.GAME_RED_WIN:
+                return String.Format(l10n.teamWin, getTeamName(BaboPlayerTeamID.PLAYER_TEAM_BLUE)); ;
+            case BaboRoundState.GAME_DRAW:
+                return l10n.gameDraw;
+            case BaboRoundState.GAME_MAP_CHANGE:
+                return l10n.gameMapChange;
+            case BaboRoundState.GAME_DONT_SHOW:
+            default:
+                return "";
+        }
+    }
+
     public static string GetMd5Hash(string input) {
         // Convert the input string to a byte array and compute the hash.
         byte[] data = MD5.Create().ComputeHash(Encoding.ASCII.GetBytes(input));

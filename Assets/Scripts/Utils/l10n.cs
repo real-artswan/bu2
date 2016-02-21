@@ -28,4 +28,8 @@
     public static string caps = "Caps";
     public static string ping = "PING";
     public static string playerDead = "(Dead)";
+    public static string gamePlaying = "PLAYING";
+    public static string teamWin = "{0} WIN";
+    public static string gameDraw = "DRAW";
+    public static string gameMapChange = "MAP IS CHANGING";
 }

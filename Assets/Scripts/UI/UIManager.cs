@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BaboUI;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityStandardAssets.CrossPlatformInput;
@@ -9,13 +10,15 @@ public class UIManager : MonoBehaviour
     public GameObject mainMenu;
     public GameObject gameMenu;
     public GameObject HUD;
-    public GameObject statsTable;
+    public StatsTable statsTable;
     public GlobalGameVariables gameVars;
     public Text gameMenuInfo;
     public NetConnection connection;
     public GameObject resumeButton;
     public GameState gameState;
     public GameObject mainWeapons;
+
+    private bool lockStats = false;
 
     void Start() {
         Cursor.visible = true;
@@ -31,12 +34,21 @@ public class UIManager : MonoBehaviour
                     showGameMenu();
             }
             if (CrossPlatformInputManager.GetButtonDown("Stats")) {
-                statsTable.SetActive(true);
+                showStats();
             }
-            if (CrossPlatformInputManager.GetButtonUp("Stats")) {
-                statsTable.SetActive(false);
+            if (!lockStats && CrossPlatformInputManager.GetButtonUp("Stats")) {
+                statsTable.gameObject.SetActive(false);
             }
         }
+    }
+
+    public void showStats() {
+        statsTable.gameObject.SetActive(true);
+    }
+
+    public void lockShowStats(bool lockStats) {
+        this.lockStats = lockStats;
+        statsTable.gameObject.SetActive(lockStats);
     }
 
     public void setMainWeapon(Toggle sender) {

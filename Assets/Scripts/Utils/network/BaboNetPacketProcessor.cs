@@ -67,12 +67,16 @@ namespace BaboNetwork
                     doBadChecksumInfo((net_svcl_bad_checksum_info)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_CLSV_SVCL_PLAYER_INFO:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: player info");
                     doPlayerInfo((net_clsv_svcl_player_info)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_CLSV_SVCL_CHAT:
                     doChat((net_clsv_svcl_chat)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_CLSV_SVCL_TEAM_REQUEST:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: team request");
                     doTeamRequest((net_clsv_svcl_team_request)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_CLSV_SVCL_PLAYER_COORD_FRAME:
@@ -100,12 +104,16 @@ namespace BaboNetwork
                     doMapChunk((net_svcl_map_chunk)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_MAP_LIST:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: map list");
                     doMapList((net_svcl_map_list)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_CLSV_SVCL_PLAYER_UPDATE_SKIN:
                     doPlayerUpdateSkin((net_clsv_svcl_player_update_skin)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_HASH_SEED:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: hash seed");
                     doHashSeed((net_svcl_hash_seed)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_EXPLOSION:
@@ -118,6 +126,8 @@ namespace BaboNetwork
                     doPlaySound((net_svcl_play_sound)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_GAMEVERSION:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: game version");
                     doGameVersion((net_svcl_gameversion)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_SYNCHRONIZE_TIMER:
@@ -133,24 +143,38 @@ namespace BaboNetwork
                     doFlagEnum((net_svcl_flag_enum)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_GAME_STATE:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: game state");
                     doGameState((net_svcl_game_state)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_CHANGE_GAME_TYPE:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: game type change");
                     doChangeGameType((net_svcl_change_game_type)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_MAP_CHANGE:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: map change");
                     doMapChange((net_svcl_map_change)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_SERVER_INFO:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: server info");
                     doServerInfo((net_svcl_server_info)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_SERVER_DISCONNECT:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: server disconnect");
                     doServerDisconnect();
                     break;
                 case BaboPacketTypeID.NET_SVCL_PLAYER_DISCONNECT:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: player disconnect");
                     doPlayerDisconnect((net_svcl_player_disconnect)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_PLAYER_ENUM_STATE:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: player enum");
                     doPlayerEnumState((net_svcl_player_enum_state)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_PING:
@@ -160,6 +184,8 @@ namespace BaboNetwork
                     doPlayerPing((net_svcl_player_ping)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_PLAYER_SPAWN:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: player spawn");
                     doPlayerSpawn((net_svcl_player_spawn)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_SV_CHANGE:
@@ -172,6 +198,8 @@ namespace BaboNetwork
                     doDeleteProjectile((net_svcl_delete_projectile)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_NEWPLAYER:
+                    if (Debug.isDebugBuild)
+                        Debug.Log("PCKT: player new");
                     doNewPlayer((net_svcl_newplayer)parsedPacket);
                     break;
                 default:
@@ -709,11 +737,10 @@ namespace BaboNetwork
             if (isDownloadingMap)
                 return;
 
-            gameState.roundState = (BaboRoundState)parsedPacket.newState;
+            gameState.setRoundState((BaboRoundState)parsedPacket.newState);
 
-            if (parsedPacket.reInit != 0) {
-                // Ouch, on fout toute а 0 (score, etc)
-            }
+            if (Debug.isDebugBuild)
+                Debug.LogFormat("Game state {0} reinit {1}", gameState.getRoundState().ToString(), parsedPacket.reInit);
         }
 
         private void doPlayerPing(net_svcl_player_ping parsedPacket) {

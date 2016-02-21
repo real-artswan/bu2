@@ -28,7 +28,6 @@ public class GameState : MonoBehaviour
     //internal bool gotGameState = false;
     internal int mapSeed = 0; //?? what is this
     internal bool needToShutDown = false;
-    internal BaboRoundState roundState = BaboRoundState.GAME_DONT_SHOW;
     internal int serverFrameID = 0;
     internal bool isAdmin = false;
     internal float gameTimeLeft = 0;
@@ -41,6 +40,10 @@ public class GameState : MonoBehaviour
     internal GameObject blueFlag;
     internal GameObject redFlag;
 
+    private BaboRoundState _roundState = BaboRoundState.GAME_DONT_SHOW;
+    internal BaboRoundState getRoundState() {
+        return _roundState;
+    }
     private BaboGameType _gameType = BaboGameType.GAME_TYPE_DM;
     internal BaboGameType getGameType() {
         return _gameType;
@@ -53,7 +56,7 @@ public class GameState : MonoBehaviour
         redTeamScore = 0;
         viewShake = 0;
         roundTimeLeft = 0;
-        roundState = BaboRoundState.GAME_DONT_SHOW;
+        _roundState = BaboRoundState.GAME_DONT_SHOW;
         voting.reset();
         flagsState.reset();
         foreach (PlayerState ps in players.Values) {
@@ -66,6 +69,13 @@ public class GameState : MonoBehaviour
             projectile.destroy();
         projectiles.Clear();
         hud.updateHudElementsVisibility();
+    }
+
+    internal void setRoundState(BaboRoundState newState) {
+        if (_roundState == newState)
+            return;
+        _roundState = newState;
+        uiManager.lockShowStats(newState != BaboRoundState.GAME_PLAYING);
     }
 
     internal void setGameType(BaboGameType gameType) {

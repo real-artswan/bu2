@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace BaboUI
 {
@@ -7,12 +8,14 @@ namespace BaboUI
     {
         public GameState gameState;
         public StatsTableRow rowPrefab;
-
+        public Text roundStatus;
         public Transform content;
 
         private int currentRow = 0;
 
         void Update() {
+            roundStatus.text = BaboUtils.getRoundStatus(gameState.getRoundState());
+
             currentRow = 0;
 
             List<PlayerState> specs = new List<PlayerState>();
@@ -45,7 +48,7 @@ namespace BaboUI
                     break;
                 case BaboGameType.GAME_TYPE_DM:
                 case BaboGameType.GAME_TYPE_SND:
-                    updateRowsCount(gameState.players.Count + 3);
+                    updateRowsCount(gameState.players.Count + 2);
                     getNextRow().beHeader();
                     List<PlayerState> all = new List<PlayerState>();
                     foreach (PlayerState p in gameState.players.Values) {
