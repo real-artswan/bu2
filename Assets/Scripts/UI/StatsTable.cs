@@ -16,7 +16,7 @@ namespace BaboUI
         void Update() {
             roundStatus.text = BaboUtils.getRoundStatus(gameState.getRoundState());
 
-            currentRow = 0;
+            /*currentRow = 0;
 
             List<PlayerState> specs = new List<PlayerState>();
             switch (gameState.getGameType()) {
@@ -63,7 +63,7 @@ namespace BaboUI
             }
             getNextRow().beSubHeader(BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR);
             specs.Sort((x, y) => x.kills - y.kills);
-            addPlayersRows(specs);
+            addPlayersRows(specs);*/
         }
 
         private void addPlayersRows(List<PlayerState> players) {

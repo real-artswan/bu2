@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class GameState : MonoBehaviour
 {
+    public GameObject spectator;
     public GameObject flagModel;
     public GameObject baboModel;
     public ParticleSystem explosionModel;
@@ -71,36 +72,17 @@ public class GameState : MonoBehaviour
         hud.updateHudElementsVisibility();
     }
 
-    internal void setRoundState(BaboRoundState newState) {
-        if (_roundState == newState)
-            return;
-        _roundState = newState;
-        uiManager.lockShowStats(newState != BaboRoundState.GAME_PLAYING);
-    }
-
-    internal void setGameType(BaboGameType gameType) {
-        _gameType = gameType;
-        bool flagsVisible = _gameType == BaboGameType.GAME_TYPE_CTF;
-        if (map.blueFlagPod != null)
-            map.blueFlagPod.SetActive(flagsVisible);
-        if (map.redFlagPod != null)
-            map.redFlagPod.SetActive(flagsVisible);
-        blueFlag.SetActive(flagsVisible);
-        redFlag.SetActive(flagsVisible);
-
-        reset();
-    }
-
-
     void Start() {
         blueFlag = Instantiate(flagModel);
         Renderer r = blueFlag.transform.FindChild("Cloth").GetComponent<Renderer>();
-        r.material = Resources.Load<Material>("Materials/BlueTeam");
+        r.material = new Material(r.material);
+        r.material.color = BaboUtils.getTeamColor(BaboPlayerTeamID.PLAYER_TEAM_BLUE);
         blueFlag.SetActive(false);
 
         redFlag = Instantiate(flagModel);
         r = redFlag.transform.FindChild("Cloth").GetComponent<Renderer>();
-        r.material = Resources.Load<Material>("Materials/RedTeam");
+        r.material = new Material(r.material);
+        r.material.color = BaboUtils.getTeamColor(BaboPlayerTeamID.PLAYER_TEAM_RED);
         redFlag.SetActive(false);
 
         gameObject.SetActive(false);
@@ -209,11 +191,51 @@ public class GameState : MonoBehaviour
                 String.Format(l10n.menuGameInfo, _gameType.ToString(), "Server name", map.mapName, map.authorName, "Rules of this game"); ;
     }
 
-    public void assignTeam(BaboPlayerTeamID team) {
+    public void thisPlayerAskTeam(BaboPlayerTeamID team) {
+        if (thisPlayer.teamID == team)
+            return;
         net_clsv_svcl_team_request teamRequest;
         teamRequest.playerID = thisPlayer.playerID;
         teamRequest.teamRequested = (sbyte)team;
         connection.packetsToSend.Enqueue(new BaboRawPacket(teamRequest));
+    }
+
+    internal void thisPlayerTeamAssigned() {
+        updateSpectatorActivity(true);
+    }
+
+    internal void setRoundState(BaboRoundState newState) {
+        if (_roundState == newState)
+            return;
+        _roundState = newState;
+
+        uiManager.lockShowStats(newState != BaboRoundState.GAME_PLAYING);
+        updateSpectatorActivity(true);
+    }
+
+    public void updateSpectatorActivity(bool allowSpecView) {
+        if (!allowSpecView) {
+            spectator.SetActive(false);
+            return;
+        }
+        spectator.SetActive(
+            (getRoundState() == BaboRoundState.GAME_PLAYING) && (
+                (thisPlayer == null) || (thisPlayer.teamID == BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
+                )
+            );
+    }
+
+    internal void setGameType(BaboGameType gameType) {
+        _gameType = gameType;
+        bool flagsVisible = _gameType == BaboGameType.GAME_TYPE_CTF;
+        if (map.blueFlagPod != null)
+            map.blueFlagPod.SetActive(flagsVisible);
+        if (map.redFlagPod != null)
+            map.redFlagPod.SetActive(flagsVisible);
+        blueFlag.SetActive(flagsVisible);
+        redFlag.SetActive(flagsVisible);
+
+        reset();
     }
 
     internal void spawnExplosion(Vector3 position, Vector3 normal, float radius) {

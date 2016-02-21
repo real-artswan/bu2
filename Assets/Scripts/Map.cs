@@ -4,7 +4,6 @@ using Utils;
 
 public class Map : MonoBehaviour
 {
-    public CameraController cameraController;
     public Transform floor;
     public Transform wallsParent;
     public Transform spawnsParent;
@@ -62,14 +61,10 @@ public class Map : MonoBehaviour
         finally {
             fs.Close();
         }*/
-
-        cameraController.gameObject.transform.rotation = Quaternion.Euler(90, 0, 0); //look to map
-        cameraController.setCameraHeight(7);
         mapCreated = true;
     }
 
     public void clearMap() {
-        Camera.main.transform.rotation = Quaternion.Euler(0, 0, 0); //don't look to map
         mapHeight = 0;
         mapWidth = 0;
         foreach (Transform child in wallsParent.transform) {

@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityStandardAssets.CrossPlatformInput;
 
-public class PlayerMovement : MonoBehaviour {
+public class PlayerMovement : MonoBehaviour
+{
 
     public float moveSpeed = 10;
     public GameObject body;
@@ -11,32 +11,29 @@ public class PlayerMovement : MonoBehaviour {
     private CharacterController controller;
     private Vector3 bounce = Vector3.zero;
 
-    void Start () {
+    void Start() {
         controller = GetComponent<CharacterController>();
     }
 
-    void Update()
-    {
+    void Update() {
         if ((gameState.thisPlayer == null) || (gameState.thisPlayer.teamID == BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
             || (gameState.thisPlayer.teamID == BaboPlayerTeamID.PLAYER_TEAM_AUTO_ASSIGN))
             return;
         //move
-        movePlayer(CrossPlatformInputManager.GetAxis("UpDown"), Input.GetAxis("LeftRight"));
+        movePlayer(CrossPlatformInputManager.GetAxis("Vertical"), Input.GetAxis("Horizontal"));
 
         //turn
         //Vector2 mPosition = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
         //Debug.Log(mPosition.ToString());
-        
+
         turnPlayerToCursor();
     }
 
-    void FixedUpdate()
-    {
+    void FixedUpdate() {
 
     }
 
-    private void turnPlayerToCursor()
-    {
+    private void turnPlayerToCursor() {
         // Determine the target rotation.  This is the rotation if the transform looks at the target point.
         Quaternion targetRotation = Quaternion.LookRotation(cameraController.cursorPosInWorld - transform.position);
 
@@ -44,13 +41,11 @@ public class PlayerMovement : MonoBehaviour {
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 1);
     }
 
-    public void movePlayer(float up, float right)
-    {
+    public void movePlayer(float up, float right) {
         Vector3 movement = Vector3.zero;
-        
+
         movement = new Vector3(right, 0, up);
-        if (bounce.sqrMagnitude > 0)
-        {
+        if (bounce.sqrMagnitude > 0) {
             movement = bounce * moveSpeed / 3f;
             bounce = Vector3.zero;
         }
@@ -61,15 +56,13 @@ public class PlayerMovement : MonoBehaviour {
         controller.Move(movement * Time.deltaTime);
 
         //roll body
-        if (movement.magnitude > 0)
-        {
+        if (movement.magnitude > 0) {
             //body.transform.RotateAround(transform.position, new Vector3(movement.z, 0, movement.x) , 1.5f * moveSpeed);
             body.transform.Rotate(new Vector3(movement.z, 0, movement.x), 1.5f * moveSpeed);
         }
     }
 
-    void OnControllerColliderHit(ControllerColliderHit hit)
-    {
+    void OnControllerColliderHit(ControllerColliderHit hit) {
 
         Rigidbody body = hit.collider.attachedRigidbody;
 

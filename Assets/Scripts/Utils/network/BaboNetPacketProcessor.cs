@@ -473,10 +473,14 @@ namespace BaboNetwork
             }
         }
 
-        private void doTeamRequest(net_clsv_svcl_team_request parsedPacket) {
+        private void doTeamRequest(net_clsv_svcl_team_request teamRequest) {
+            if (Debug.isDebugBuild)
+                Debug.LogFormat("Player team request {0}", teamRequest.playerID);
             PlayerState playerState;
-            if (gameState.players.TryGetValue(parsedPacket.playerID, out playerState)) {
-                playerState.teamID = (BaboPlayerTeamID)parsedPacket.teamRequested;
+            if (gameState.players.TryGetValue(teamRequest.playerID, out playerState)) {
+                playerState.teamID = (BaboPlayerTeamID)teamRequest.teamRequested;
+                if (playerState = gameState.thisPlayer)
+                    gameState.thisPlayerTeamAssigned();
             }
         }
 
@@ -518,6 +522,8 @@ namespace BaboNetwork
 
             if (gameState.thisPlayer == null) {
                 gameState.thisPlayer = playerState;
+                if (Debug.isDebugBuild)
+                    Debug.LogFormat("This player ID {0}", playerState.playerID);
             }
         }
 
@@ -540,34 +546,36 @@ namespace BaboNetwork
             ps.prepareToSpawn(new Vector3((float)playerSpawn.position[0] / 10.0f, (float)playerSpawn.position[1] / 10.0f, (float)playerSpawn.position[2] / 10.0f));
         }
 
-        private void doPlayerEnumState(net_svcl_player_enum_state parsedPacket) {
+        private void doPlayerEnumState(net_svcl_player_enum_state playerEnum) {
+            if (Debug.isDebugBuild)
+                Debug.LogFormat("Player enum ID {0}", playerEnum.playerID);
             PlayerState ps;
-            if (gameState.players.TryGetValue(parsedPacket.playerID, out ps)) {
-                gameState.players.Remove(parsedPacket.playerID);
+            if (gameState.players.TryGetValue(playerEnum.playerID, out ps)) {
+                gameState.players.Remove(playerEnum.playerID);
                 ps.destroy();
             }
 
-            ps = PlayerState.createSelf(parsedPacket.playerID, gameState.baboModel);
+            ps = PlayerState.createSelf(playerEnum.playerID, gameState.baboModel);
 
-            ps.netID = parsedPacket.babonetID;
-            ps.playerName = BaboUtils.baboBytesToString(parsedPacket.playerName, true);
-            ps.ip = BaboUtils.baboBytesToString(parsedPacket.playerIP, false);
-            ps.kills = parsedPacket.kills;
-            ps.deaths = (int)parsedPacket.deaths;
-            ps.score = (int)parsedPacket.score;
-            ps.returns = (int)parsedPacket.returns;
-            ps.flagAttempts = (int)parsedPacket.flagAttempts;
-            ps.damage = (int)parsedPacket.damage;
-            ps.status = (BaboPlayerStatus)parsedPacket.status;
-            ps.teamID = (BaboPlayerTeamID)parsedPacket.teamID;
-            ps.setWeaponType((BaboWeapon)parsedPacket.weaponID);
-            ps.life = parsedPacket.life;
-            ps.dmg = parsedPacket.dmg;
-            parsedPacket.skin[6] = 0;
-            ps.body.skin = BaboUtils.baboBytesToString(parsedPacket.skin, false);
-            ps.body.blueDecal = BaboUtils.fromBaboColor(parsedPacket.blueDecal);
-            ps.body.greenDecal = BaboUtils.fromBaboColor(parsedPacket.greenDecal);
-            ps.body.redDecal = BaboUtils.fromBaboColor(parsedPacket.redDecal);
+            ps.netID = playerEnum.babonetID;
+            ps.playerName = BaboUtils.baboBytesToString(playerEnum.playerName, true);
+            ps.ip = BaboUtils.baboBytesToString(playerEnum.playerIP, false);
+            ps.kills = playerEnum.kills;
+            ps.deaths = (int)playerEnum.deaths;
+            ps.score = (int)playerEnum.score;
+            ps.returns = (int)playerEnum.returns;
+            ps.flagAttempts = (int)playerEnum.flagAttempts;
+            ps.damage = (int)playerEnum.damage;
+            ps.status = (BaboPlayerStatus)playerEnum.status;
+            ps.teamID = (BaboPlayerTeamID)playerEnum.teamID;
+            ps.setWeaponType((BaboWeapon)playerEnum.weaponID);
+            ps.life = playerEnum.life;
+            ps.dmg = playerEnum.dmg;
+            playerEnum.skin[6] = 0;
+            ps.body.skin = BaboUtils.baboBytesToString(playerEnum.skin, false);
+            ps.body.blueDecal = BaboUtils.fromBaboColor(playerEnum.blueDecal);
+            ps.body.greenDecal = BaboUtils.fromBaboColor(playerEnum.greenDecal);
+            ps.body.redDecal = BaboUtils.fromBaboColor(playerEnum.redDecal);
             BaboPlayerTeamID teamColor = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
             if ((gameState.getGameType() != BaboGameType.GAME_TYPE_DM) || (gameState.getGameType() != BaboGameType.GAME_TYPE_SND))
                 teamColor = ps.teamID;
@@ -575,7 +583,7 @@ namespace BaboNetwork
 
             gameState.eventMessages.Add(string.Format(l10n.addingPlayer, ps.playerName));
 
-            gameState.players.Add(parsedPacket.playerID, ps);
+            gameState.players.Add(playerEnum.playerID, ps);
         }
 
         private void doPlayerInfo(net_clsv_svcl_player_info parsedPacket) {

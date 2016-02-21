@@ -6,7 +6,6 @@ using UnityStandardAssets.CrossPlatformInput;
 
 public class UIManager : MonoBehaviour
 {
-
     public GameObject mainMenu;
     public GameObject gameMenu;
     public GameObject HUD;
@@ -34,32 +33,23 @@ public class UIManager : MonoBehaviour
                     showGameMenu();
             }
             if (CrossPlatformInputManager.GetButtonDown("Stats")) {
-                showStats();
+                showStats(true);
             }
             if (!lockStats && CrossPlatformInputManager.GetButtonUp("Stats")) {
-                statsTable.gameObject.SetActive(false);
+                showStats(false);
             }
         }
     }
 
-    public void showStats() {
-        statsTable.gameObject.SetActive(true);
+    public void showStats(bool show) {
+        statsTable.gameObject.SetActive(show);
+        gameState.updateSpectatorActivity(!show);
     }
 
     public void lockShowStats(bool lockStats) {
         this.lockStats = lockStats;
         statsTable.gameObject.SetActive(lockStats);
-    }
-
-    public void setMainWeapon(Toggle sender) {
-        if (sender.isOn && (gameState.thisPlayer != null))
-            gameState.thisPlayer.setWeaponType((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
-    }
-
-    public void askAssignTeam(Button sender) {
-        BaboPlayerTeamID team = (BaboPlayerTeamID)Enum.Parse(typeof(BaboPlayerTeamID), sender.name);
-        gameState.assignTeam(team);
-        hideMenus();
+        gameState.updateSpectatorActivity(!lockStats);
     }
 
     public void showMainMenu() {
@@ -68,6 +58,7 @@ public class UIManager : MonoBehaviour
         gameMenu.SetActive(false);
         mainMenu.SetActive(true);
         resumeButton.SetActive(connection.connected);
+        gameState.updateSpectatorActivity(false);
     }
     public void showGameMenu() {
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
@@ -80,6 +71,8 @@ public class UIManager : MonoBehaviour
             wToggle.gameObject.GetComponent<Toggle>().isOn = true;
         }
         mainMenu.SetActive(false);
+
+        gameState.updateSpectatorActivity(true);
     }
 
     public void hideMenus() {
@@ -88,9 +81,22 @@ public class UIManager : MonoBehaviour
         HUD.SetActive(true);
         gameMenu.SetActive(false);
         mainMenu.SetActive(false);
+
+        gameState.updateSpectatorActivity(true);
     }
 
     public void closeApplication() {
         Application.Quit();
+    }
+
+    public void setMainWeapon(Toggle sender) {
+        if (sender.isOn && (gameState.thisPlayer != null))
+            gameState.thisPlayer.setWeaponType((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
+    }
+
+    public void askAssignTeam(Button sender) {
+        BaboPlayerTeamID team = (BaboPlayerTeamID)Enum.Parse(typeof(BaboPlayerTeamID), sender.name);
+        gameState.thisPlayerAskTeam(team);
+        hideMenus();
     }
 }
