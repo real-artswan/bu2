@@ -19,6 +19,7 @@ ModelImporter:
     4300002: Object01
     7400000: Sheild
     9500000: //RootNode
+    11100000: //RootNode
   materials:
     importMaterials: 0
     materialName: 0
@@ -62,7 +63,7 @@ ModelImporter:
     normalSmoothAngle: 60
     normalImportMode: 0
     tangentImportMode: 3
-  importAnimation: 0
+  importAnimation: 1
   copyAvatar: 0
   humanDescription:
     human: []
@@ -77,7 +78,7 @@ ModelImporter:
     rootMotionBoneName: 
     hasTranslationDoF: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 0
+  animationType: 1
   humanoidOversampling: 1
   additionalBone: 0
   userData: 

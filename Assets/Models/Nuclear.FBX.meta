@@ -23,6 +23,7 @@ ModelImporter:
     4300002: Object01
     4300004: Object02
     9500000: //RootNode
+    11100000: //RootNode
   materials:
     importMaterials: 0
     materialName: 0

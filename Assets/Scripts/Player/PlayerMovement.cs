@@ -3,25 +3,35 @@ using UnityStandardAssets.CrossPlatformInput;
 
 public class PlayerMovement : MonoBehaviour
 {
-
     public float moveSpeed = 10;
     public GameObject body;
     public CameraController cameraController;
-    public GameState gameState;
     private CharacterController controller;
     private Vector3 bounce = Vector3.zero;
+    public float animDuration = 1;
 
     void Start() {
         controller = GetComponent<CharacterController>();
     }
 
     void Update() {
-        if ((gameState.thisPlayer == null) || (gameState.thisPlayer.teamID == BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
-            || (gameState.thisPlayer.teamID == BaboPlayerTeamID.PLAYER_TEAM_AUTO_ASSIGN))
-            return;
         //move
         movePlayer(CrossPlatformInputManager.GetAxis("Vertical"), Input.GetAxis("Horizontal"));
-
+        if (CrossPlatformInputManager.GetButtonDown("FireSecondary")) {
+            transform.FindChild("Shield").GetComponent<Animator>().SetFloat("duration", transform.FindChild("Shield").GetComponent<Animator>().GetCurrentAnimatorClipInfo(0).Length / animDuration);
+            transform.FindChild("Shield").GetComponent<Animator>().SetTrigger("Play");
+        }
+        if (CrossPlatformInputManager.GetButtonDown("FireMain")) {
+            float dmg = 2.0f;
+            Vector3 position1 = transform.position;
+            Vector3 position2 = Vector3.forward;
+            Color trailColor = Color.red;
+            /*Trail trail = Instantiate<Trail>(trailPrefab);
+            trail.spawnTrail(position1, position2, dmg, trailColor, dmg * 4, 0);
+            for (int i = 2; i < 5; i++)
+                Instantiate<Trail>(trailPrefab).spawnTrail(position1, position2, dmg / (float)Math.Pow(2, i), trailColor, dmg, 1);
+                */
+        }
         //turn
         //Vector2 mPosition = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
         //Debug.Log(mPosition.ToString());
@@ -35,6 +45,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void turnPlayerToCursor() {
         // Determine the target rotation.  This is the rotation if the transform looks at the target point.
+        if (cameraController == null)
+            return;
         Quaternion targetRotation = Quaternion.LookRotation(cameraController.cursorPosInWorld - transform.position);
 
         // Smoothly rotate towards the target point.

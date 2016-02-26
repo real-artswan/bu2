@@ -3,18 +3,15 @@ using UnityEngine;
 
 public class PlayerState : MonoBehaviour
 {
-    public GlobalServerVariables serverVars;
-    public GameObject grenadeModel;
-    public GameObject molotovModel;
+    private GlobalServerVariables serverVars;
 
     public BaboBody body;
-    public SecondaryWeapon secondaryWeapon;
-    public Backpack backpack;
 
     public static int MAX_NADES = 3;
     public static int MAX_MOLOTOVS = 1;
 
     internal GameObject mainWeapon;
+    internal GameObject secondaryWeapon;
     internal string playerName = "";
 
     internal byte playerID = 0;
@@ -47,8 +44,6 @@ public class PlayerState : MonoBehaviour
     private float timeToSpawn;
     private float immuneTime;
     private bool spawnRequested = false;
-    private int grenadeDelay = 0;
-    private int meleeDelay = 0;
     private BaboWeapon currentWeapon = BaboWeapon.WEAPON_SMG;
     private BaboWeapon currentWeapon2 = BaboWeapon.KNIVES;
     //internal BaboWeapon nextSpawnWeapon = BaboWeapon.WEAPON_SMG;
@@ -58,30 +53,51 @@ public class PlayerState : MonoBehaviour
 
     internal float camPosZ = 5;
 
+    internal float shootDelay = 0;
+    private float grenadeDelay = 0;
+    private float meleeDelay = 0;
+
     internal float firedShowDelay = 0;
 
     private static Vector3 Hidden_Position = new Vector3(0, -10, 0);
 
+    void Awake() {
+        if (serverVars == null) {
+            GameObject go = GameObject.Find("GlobalServerVariables");
+            if (go != null)
+                serverVars = go.GetComponent<GlobalServerVariables>();
+        }
+    }
+
     void Update() {
         if (status != BaboPlayerStatus.PLAYER_STATUS_ALIVE) {
             firedShowDelay = 0;
+            meleeDelay = 0;
             transform.position = Hidden_Position;
             return;
         }
-        if (firedShowDelay > 0)
+        if (firedShowDelay > 0) {
             firedShowDelay -= Time.deltaTime;
+            if (firedShowDelay < 0)
+                firedShowDelay = 0;
+        }
+
         if (transform.position == Hidden_Position)
             transform.position = currentCF.position;
         else
             transform.position = Vector3.Lerp(transform.position, currentCF.position, 0.5f);
-        // Determine the target rotation.  This is the rotation if the transform looks at the target point.
-        Quaternion targetRotation = Quaternion.LookRotation(currentCF.mousePosOnMap - transform.position);
 
-        // Smoothly rotate towards the target point.
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 1);
+        if (currentCF.mousePosOnMap != transform.position) {
+            Quaternion targetRotation = Quaternion.LookRotation(currentCF.mousePosOnMap - transform.position);
+
+            // Smoothly rotate towards the target point.
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 1);
+        }
     }
 
     internal static PlayerState createSelf(byte playerID, GameObject prefab) {
+        if (Debug.isDebugBuild)
+            Debug.LogFormat("player created {0}", playerID);
         GameObject obj = Instantiate(prefab) as GameObject;
         obj.transform.position = Hidden_Position;
         PlayerState ps = obj.GetComponent<PlayerState>();
@@ -104,7 +120,6 @@ public class PlayerState : MonoBehaviour
         //timeDead = 0.0f;
         //timeAlive = 0.0f;
         //timeIdle = 0.0f;
-        firedShowDelay = 0;
         spawnRequested = false;
 
         currentCF.position = spawnPoint;
@@ -113,6 +128,8 @@ public class PlayerState : MonoBehaviour
 
         grenadeDelay = 0;
         meleeDelay = 0;
+        shootDelay = 0;
+
         _nades = MAX_NADES;
         _molotovs = MAX_MOLOTOVS;
 
@@ -163,11 +180,11 @@ public class PlayerState : MonoBehaviour
         currentCF = new CoordFrame();
         camPosZ = 5;
 
-        firedShowDelay = 0;
+        shootDelay = 0;
     }
 
     internal void setWeaponType(BaboWeapon weapon) {
-        if (currentWeapon == weapon)
+        if ((currentWeapon == weapon) && (mainWeapon != null))
             return;
         currentWeapon = weapon;
         if (Debug.isDebugBuild)
@@ -180,8 +197,7 @@ public class PlayerState : MonoBehaviour
         if (currentWeapon == BaboWeapon.WEAPON_NO)
             return;
         //load new weapon data
-        //yes, weapons prefabs must be named the same as enum values
-        GameObject weaponModel = Resources.Load<GameObject>("models/MainWeapons/" + currentWeapon.ToString());
+        GameObject weaponModel = serverVars.weaponsVars.getWeapon(currentWeapon).prefab;
         if (weaponModel == null) {
             if (Debug.isDebugBuild)
                 Debug.LogWarning("Can not load weapon model");
@@ -189,28 +205,52 @@ public class PlayerState : MonoBehaviour
             return;
         }
         mainWeapon = Instantiate(weaponModel);
+        mainWeapon.transform.position = gameObject.transform.position;
         mainWeapon.transform.parent = gameObject.transform;
         mainWeapon.transform.localRotation = new Quaternion(0, 180, 0, 0);
-        mainWeapon.transform.localPosition = new Vector3(0, -0.5f, 0);
-        mainWeapon.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
-        /*mainWeapon = weaponObject.GetComponent<MainWeapon>();
-        if (mainWeapon == null)
-        {
-            if (Debug.isDebugBuild)
-                Debug.LogWarning("Weapon model doesn't contain MainWeapon");
-            return;
-        }*/
+        mainWeapon.transform.localPosition = new Vector3(0, -0.25f, 0);
+        //mainWeapon.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
     }
 
     internal BaboWeapon getWeaponType() {
         return currentWeapon;
     }
 
-    internal void setWeapon2Type(BaboWeapon baboWeapon) {
-        currentWeapon2 = baboWeapon;
+    internal void setWeapon2Type(BaboWeapon weapon) {
+        if ((currentWeapon2 == weapon) && (secondaryWeapon != null))
+            return;
+        currentWeapon2 = weapon;
+        if (Debug.isDebugBuild)
+            Debug.Log("Trying to load secondary " + weapon.ToString());
+        //clean previouse weapon data
+        if (secondaryWeapon != null)
+            GameObject.DestroyObject(secondaryWeapon);
+        secondaryWeapon = null;
+
+        if (currentWeapon2 == BaboWeapon.WEAPON_NO)
+            return;
+        //load new weapon data
+        GameObject weaponModel = serverVars.weaponsVars.getWeapon(currentWeapon2).prefab;
+        if (weaponModel == null) {
+            if (Debug.isDebugBuild)
+                Debug.LogWarning("Can not load weapon model");
+            currentWeapon2 = BaboWeapon.WEAPON_NO;
+            return;
+        }
+        secondaryWeapon = Instantiate(weaponModel);
+        secondaryWeapon.transform.position = gameObject.transform.position;
+        secondaryWeapon.transform.parent = gameObject.transform;
+        //secondaryWeapon.transform.localRotation = new Quaternion(0, 180, 0, 0);
+        //secondaryWeapon.transform.localPosition = new Vector3(0, -0.5f, 0);
+        //secondaryWeapon.transform.localScale = new Vector3(0.5f, 0.5f, 0.33f);
     }
 
     internal BaboWeapon getWeapon2Type() {
         return currentWeapon2;
+    }
+
+    internal void shootSecondary() {
+        secondaryWeapon.GetComponent<Animator>().SetTrigger("Play");
+        meleeDelay = 2;
     }
 }

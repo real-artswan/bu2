@@ -1,23 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using UnityEngine;
 
+[Serializable]
 public struct WeaponDBItem
 {
     public BaboWeapon weaponType;
-    public string prefab;
-	public float damage;
+    public GameObject prefab;
+    public float fireDelay;
+    public float damage;
+    public BaboProjectileType projectileType;
 }
-public class WeaponsVars
+
+[Serializable]
+public struct ProjectileDBItem
 {
-	public Dictionary<BaboWeapon, WeaponDBItem> vars = new Dictionary<BaboWeapon, WeaponDBItem>();
-    
-	public WeaponsVars() {
-		foreach (BaboWeapon w in Enum.GetValues(typeof(BaboWeapon))) {
-			WeaponDBItem item = new WeaponDBItem(); //TODO fill with config variables
-			vars.Add(w, item);
-		}
-	}
+    public BaboProjectileType projectileType;
+    public GameObject prefab;
+}
+
+public class WeaponsVars : MonoBehaviour
+{
+    public List<WeaponDBItem> weapons = new List<WeaponDBItem>();
+
+    public List<ProjectileDBItem> projectiles = new List<ProjectileDBItem>();
+
+    public WeaponDBItem getWeapon(BaboWeapon weapon) {
+        return this.weapons.Find(w => w.weaponType == weapon);
+    }
+
+    public ProjectileDBItem getProjectile(BaboProjectileType projectile) {
+        return this.projectiles.Find(p => p.projectileType == projectile);
+    }
 }
 

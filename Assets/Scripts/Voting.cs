@@ -1,4 +1,4 @@
-﻿internal class Voting
+﻿public class Voting
 {
     internal bool inProgress = false;
     internal int yes = 0;
@@ -6,8 +6,7 @@
     internal string what;
     internal byte playerID;
 
-    public void reset()
-    {
+    public void reset() {
         inProgress = false;
         yes = 0;
         no = 0;

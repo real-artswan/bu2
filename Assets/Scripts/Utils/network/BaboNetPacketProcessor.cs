@@ -233,10 +233,10 @@ namespace BaboNetwork
                 return; //TODO
             if (gameState.thisPlayer.playerID == playerShoot.hitPlayerID) { //shoot to me
                 Vector3 direction = Vector3.Normalize(p2 - p1);
-                gameState.thisPlayer.currentCF.vel += direction * gameState.serverVars.weaponsVars.vars[shootWeapon].damage * 2;
+                gameState.thisPlayer.currentCF.vel += direction * gameState.serverVars.weaponsVars.getWeapon(shootWeapon).damage * 2;
             }
-            whoShoot.firedShowDelay = 2;
-            gameState.spawnImpact(p1, p2, shootWeapon, gameState.thisPlayer.teamID, playerShoot.nuzzleID);
+            whoShoot.shootDelay = 2;
+            gameState.spawnImpact(p1, p2, shootWeapon, whoShoot.teamID, playerShoot.nuzzleID);
         }
 
         private void doPlayerHit(net_svcl_player_hit playerHit) {
@@ -254,7 +254,7 @@ namespace BaboNetwork
                     case BaboWeapon.WEAPON_BAZOOKA:
                     case BaboWeapon.WEAPON_GRENADE:
                     case BaboWeapon.NUKE:
-                        float realDamage = gameState.serverVars.weaponsVars.vars[fromWeapon].damage;
+                        float realDamage = gameState.serverVars.weaponsVars.getWeapon(fromWeapon).damage;
                         float viewShakeAmount = 2 - (playerHit.damage / realDamage);
                         gameState.viewShake += viewShakeAmount;
                         break;
@@ -267,7 +267,7 @@ namespace BaboNetwork
             PlayerState ps;
             if (!gameState.players.TryGetValue(parsedPacket.playerID, out ps))
                 return;
-            ps.secondaryWeapon.shoot();
+            ps.shootSecondary();
         }
 
         private void doPlayerCoordFrame(net_clsv_svcl_player_coord_frame parsedPacket) {
@@ -313,11 +313,11 @@ namespace BaboNetwork
             projectile.nuzzleID = parsedPacket.nuzzleID;
             projectile.playerID = parsedPacket.playerID;
             projectile.uniqueID = parsedPacket.uniqueID;
-            gameState.projectiles.Add(projectile);
+            gameState.AddProjectile(projectile);
 
-            if (Debug.isDebugBuild)
+            /*if (Debug.isDebugBuild)
                 Debug.LogFormat("Projectile {0} id: {1} pos: {2} vel: {3}", projectile.typeID.ToString(),
-                    projectile.uniqueID, projectile.position.ToString(), projectile.vel.ToString());
+                    projectile.uniqueID, projectile.position.ToString(), projectile.vel.ToString());*/
         }
 
         /*private void doProjectileCoordFrame(net_svcl_projectile_coord_frame parsedPacket) {
@@ -333,21 +333,11 @@ namespace BaboNetwork
 		}*/
 
         private void doDeleteProjectile(net_svcl_delete_projectile parsedPacket) {
-            ProjectileState ps = gameState.projectiles.Find(p => p.uniqueID == parsedPacket.projectileID);
-            if (ps == null)
-                return;
-            gameState.projectiles.Remove(ps);
-            ps.destroy();
-            if (Debug.isDebugBuild)
-                Debug.LogFormat("Projectile destroy {0}", parsedPacket.projectileID);
+            gameState.DeleteProjectile(parsedPacket.projectileID);
         }
 
         private void doFlameStickToPlayer(net_svcl_flame_stick_to_player parsedPacket) {
-            //projectileID here is not ID but index in list of projectiles (omg)
-            if (parsedPacket.projectileID >= gameState.projectiles.Count)
-                return;
-            //ok, lets pray it is right projectile
-            gameState.projectiles[parsedPacket.projectileID].stickToPlayer = parsedPacket.playerID;
+            gameState.StickProjectile(parsedPacket.projectileID, parsedPacket.playerID);
         }
 
         private void doPickupItem(net_svcl_pickup_item parsedPacket) {
@@ -538,11 +528,11 @@ namespace BaboNetwork
             ps.body.redDecal = BaboUtils.fromBaboColor(playerSpawn.redDecal);
             ;
             BaboPlayerTeamID teamColor = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
-            if ((gameState.getGameType() != BaboGameType.GAME_TYPE_DM) || (gameState.getGameType() != BaboGameType.GAME_TYPE_SND))
+            if ((gameState.getGameType() != BaboGameType.GAME_TYPE_DM) && (gameState.getGameType() != BaboGameType.GAME_TYPE_SND))
                 teamColor = ps.teamID;
             ps.body.updateSkin(teamColor);
             ps.setWeaponType((BaboWeapon)playerSpawn.weaponID);
-            ps.secondaryWeapon.setWeapon((BaboWeapon)playerSpawn.meleeID);
+            ps.setWeapon2Type((BaboWeapon)playerSpawn.meleeID);
             ps.prepareToSpawn(new Vector3((float)playerSpawn.position[0] / 10.0f, (float)playerSpawn.position[1] / 10.0f, (float)playerSpawn.position[2] / 10.0f));
         }
 

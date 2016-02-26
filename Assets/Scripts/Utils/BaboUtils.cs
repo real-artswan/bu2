@@ -5,6 +5,22 @@ using UnityEngine;
 
 public static class BaboUtils
 {
+    public static Vector3 randomInsideBox(Vector3 from, Vector3 to) {
+        return new Vector3(
+            UnityEngine.Random.Range(from.x, to.x),
+            UnityEngine.Random.Range(from.y, to.y),
+            UnityEngine.Random.Range(from.z, to.z)
+            );
+    }
+    public static Color randomInsideBox(Color from, Color to) {
+        return new Color(
+            UnityEngine.Random.Range(from.r, to.r),
+            UnityEngine.Random.Range(from.g, to.g),
+            UnityEngine.Random.Range(from.b, to.b),
+            UnityEngine.Random.Range(from.a, to.a)
+            );
+    }
+
     public static float SignedAngle(Vector3 a, Vector3 b) {
         var angle = Vector3.Angle(a, b); // calculate angle
                                          // assume the sign of the cross product's Y component:
@@ -24,6 +40,7 @@ public static class BaboUtils
             case BaboRoundState.GAME_MAP_CHANGE:
                 return l10n.gameMapChange;
             case BaboRoundState.GAME_DONT_SHOW:
+                return l10n.roundRestarting;
             default:
                 return "";
         }

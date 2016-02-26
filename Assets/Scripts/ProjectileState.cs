@@ -8,10 +8,10 @@ public class ProjectileState
     internal GameState gameState = null;
 
     internal BaboProjectileType typeID = BaboProjectileType.PROJECTILE_NONE;
-	internal byte playerID = 0;
-	internal BaboWeapon weaponID = BaboWeapon.WEAPON_NO;
-	internal byte nuzzleID = 0;
-	internal Int32 uniqueID = -1;
+    internal byte playerID = 0;
+    internal BaboWeapon weaponID = BaboWeapon.WEAPON_NO;
+    internal byte nuzzleID = 0;
+    internal Int32 uniqueID = -1;
     internal Vector3 position = Vector3.zero;
     internal Vector3 vel = Vector3.zero;
     internal byte stickToPlayer = 255;
@@ -20,10 +20,8 @@ public class ProjectileState
 
     private float lifeTime = 0;
 
-    public ProjectileState (GameState gameState, Vector3 position, Vector3 velocity, BaboProjectileType typeID, BaboWeapon weaponID)
-	{
+    public ProjectileState(GameState gameState, Vector3 position, Vector3 velocity, BaboProjectileType typeID, BaboWeapon weaponID) {
         this.gameState = gameState;
-        GameObject prefab = null;
 
         this.position = position;
         this.typeID = typeID;
@@ -32,42 +30,38 @@ public class ProjectileState
         Vector3 projectileVelocity = velocity;
         Quaternion initRotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
         Vector3 initScale = new Vector3(0.1f, 0.1f, 0.1f);
-        switch (typeID)
-        {
+        GameObject prefab = null;
+        if (typeID != BaboProjectileType.PROJECTILE_DROPED_WEAPON)
+            prefab = gameState.serverVars.weaponsVars.getProjectile(typeID).prefab;
+        switch (typeID) {
             case BaboProjectileType.PROJECTILE_ROCKET:
                 lifeTime = 10;
-                prefab = Resources.Load<GameObject>("models/Rocket");
                 projectileVelocity *= 2.5f;
                 initRotation = Quaternion.LookRotation(projectileVelocity);
                 break;
             case BaboProjectileType.PROJECTILE_GRENADE:
                 lifeTime = 2;
-                prefab = Resources.Load<GameObject>("models/Grenade");
                 projectileVelocity *= 5f;
                 projectileVelocity.y += 5;
                 break;
             case BaboProjectileType.PROJECTILE_COCKTAIL_MOLOTOV:
                 lifeTime = 10;
-                prefab = Resources.Load<GameObject>("models/Molotov");
                 projectileVelocity *= 6f;
                 projectileVelocity.y += 2;
                 break;
             case BaboProjectileType.PROJECTILE_FLAME:
                 lifeTime = 10;
-                prefab = Resources.Load<GameObject>("models/Napalm");
                 initScale = Vector3.one;
                 break;
             case BaboProjectileType.PROJECTILE_LIFE_PACK:
                 lifeTime = 20;
-                prefab = Resources.Load<GameObject>("models/LifePack");
                 break;
             case BaboProjectileType.PROJECTILE_DROPED_GRENADE:
                 lifeTime = 25;
-                prefab = Resources.Load<GameObject>("models/Grenade");
                 break;
             case BaboProjectileType.PROJECTILE_DROPED_WEAPON:
                 lifeTime = 30;
-                prefab = Resources.Load<GameObject>("models/MainWeapons/" + weaponID.ToString());
+                prefab = gameState.serverVars.weaponsVars.getWeapon(weaponID).prefab;
                 initScale = new Vector3(0.4f, 0.4f, 0.4f);
                 break;
             default:
@@ -76,42 +70,36 @@ public class ProjectileState
                 break;
         }
         this.vel = projectileVelocity;
-        if (prefab != null)
-        {
+        if (prefab != null) {
             projectileObject = GameObject.Instantiate(prefab, position, initRotation) as GameObject;
             projectileObject.transform.localScale = initScale;
         }
     }
 
-    public void destroy()
-    {
+    public void destroy() {
         if (projectileObject == null)
             return;
         GameObject.Destroy(projectileObject);
     }
 
-    public void update()
-    {
+    public void update() {
         if (projectileObject == null)
             return;
         float delay = Time.deltaTime; //cache var
 
         lifeTime -= delay;
-        if (lifeTime <= 0)
-        {
+        if (lifeTime <= 0) {
             destroy();
             return;
         }
 
-        if (stickToPlayer < 255)
-        {
+        if (stickToPlayer < 255) {
             PlayerState player;
-            if (gameState.players.TryGetValue(stickToPlayer, out player))
-            {
+            if (gameState.players.TryGetValue(stickToPlayer, out player)) {
                 projectileObject.transform.position = player.currentCF.position;
                 return;
             }
-            
+
         }
 
         Vector3 newVelocity = vel; //put back new value at the end of method
@@ -121,12 +109,10 @@ public class ProjectileState
 
         RaycastHit hitInfo; //to check collisions
         Vector3 currentPos = projectileObject.transform.position; //cache var
-        
-        switch (typeID)
-        {
+
+        switch (typeID) {
             case BaboProjectileType.PROJECTILE_ROCKET:
-                if (speed > 10)
-                {
+                if (speed > 10) {
                     newVelocity /= speed;
                     speed = 10;
                     newVelocity *= speed;
@@ -138,11 +124,10 @@ public class ProjectileState
             case BaboProjectileType.PROJECTILE_DROPED_GRENADE:
             case BaboProjectileType.PROJECTILE_LIFE_PACK:
             case BaboProjectileType.PROJECTILE_GRENADE:
-                
+
                 position += newVelocity * delay;
                 newVelocity.y -= GRAVITY * delay;
-                if (Physics.Raycast(currentPos, newVelocity, out hitInfo, Vector3.Distance(currentPos, position)))
-                {
+                if (Physics.Raycast(currentPos, newVelocity, out hitInfo, Vector3.Distance(currentPos, position))) {
                     position = position + hitInfo.normal * .01f;
                     newVelocity = Vector3.Reflect(newVelocity, hitInfo.normal);
                     newVelocity *= .65f;
@@ -155,8 +140,7 @@ public class ProjectileState
             case BaboProjectileType.PROJECTILE_FLAME:
                 position += newVelocity * delay;
                 newVelocity.y -= GRAVITY * delay;
-                if (Physics.Raycast(currentPos, newVelocity, out hitInfo, Vector3.Distance(currentPos, position)))
-                {
+                if (Physics.Raycast(currentPos, newVelocity, out hitInfo, Vector3.Distance(currentPos, position))) {
                     position = position + hitInfo.normal * .01f;
                     newVelocity = Vector3.zero;
                 }

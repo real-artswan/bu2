@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-public class BaboBody : MonoBehaviour {
-
+public class BaboBody : MonoBehaviour
+{
+    [Tooltip("Must ends with path separator")]
+    public string pathToSkins = "Textures/skins/";
     public GameObject player;
     public Color redDecal;
     public Color greenDecal;
@@ -14,17 +15,19 @@ public class BaboBody : MonoBehaviour {
     private Material tmpMat;
 
     //if team is not RED or BLUE then skin will not be colorized to team color
-    public void updateSkin(BaboPlayerTeamID team)
-    {
-        if (tmpMat == null)
-        {
+    public void updateSkin(BaboPlayerTeamID team) {
+        if (tmpMat == null) {
             Renderer rend = gameObject.GetComponent<Renderer>();
             tmpMat = new Material(rend.sharedMaterial);
             rend.sharedMaterial = tmpMat;
         }
-        if (skin != skinInUse)
-        {
-            origTexture = Resources.Load<Texture2D>("skins/" + skin);
+        if (skin != skinInUse) {
+            origTexture = Resources.Load<Texture2D>(pathToSkins + skin);
+            if (origTexture == null) {
+                if (Debug.isDebugBuild)
+                    Debug.Log("Can not load skin " + skin);
+                origTexture = Resources.Load<Texture2D>(pathToSkins + "skin01");
+            }
             skinInUse = skin;
         }
 
@@ -32,8 +35,7 @@ public class BaboBody : MonoBehaviour {
         Color greenDecalT;
         Color blueDecalT;
 
-        switch (team)
-        {
+        switch (team) {
             case BaboPlayerTeamID.PLAYER_TEAM_RED:
                 redDecalT = new Color(1, .5f, .5f);
                 greenDecalT = new Color(1, .0f, .0f);
@@ -53,12 +55,10 @@ public class BaboBody : MonoBehaviour {
         Color[] img = origTexture.GetPixels();
         int i, j, k;
         Color finalColor;
-        for (j = 0; j < origTexture.height; ++j)
-        {
-            for (i = 0; i < origTexture.width; ++i)
-            {
+        for (j = 0; j < origTexture.height; ++j) {
+            for (i = 0; i < origTexture.width; ++i) {
                 k = ((j * origTexture.width) + i);
-                finalColor = (redDecalT * img[k].r + greenDecalT * img[k].g + blueDecalT * img[k].b) 
+                finalColor = (redDecalT * img[k].r + greenDecalT * img[k].g + blueDecalT * img[k].b)
                     / (img[k].r + img[k].g + img[k].b);
                 img[k] = finalColor;
             }
@@ -71,13 +71,13 @@ public class BaboBody : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    void Start() {
+
+    }
+
+    // Update is called once per frame
+    void Update() {
+
+    }
 
 }

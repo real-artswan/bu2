@@ -4,12 +4,22 @@ using Utils;
 
 public class Map : MonoBehaviour
 {
-    public Transform floor;
+    [Tooltip("Must ends with path separator")]
+    public string themesPath = "Textures/themes/";
+    public Texture2D defaultFloorTexture;
+    public Texture2D defaultDirtTexture;
+    public Texture2D defaultWallTexture;
+    public GameObject flagPodModel;
+    public GameObject wallModel;
+    public Material floorForegroundMaterial;
+    public Material floorBackgroundMaterial;
     public Transform wallsParent;
     public Transform spawnsParent;
-    public string loadMapFromFile = "";
     public Material minimap;
     public int minimapScaleFactor = 5;
+    public GlobalGameVariables gameVars;
+    [Tooltip("For offline use")]
+    public string loadMapFromFile = "";
 
     internal GameObject blueFlagPod;
     internal GameObject redFlagPod;
@@ -21,9 +31,14 @@ public class Map : MonoBehaviour
     internal float mapHeight = 0;
     internal float wShift = 0;
     internal float hShift = 0;
+
     void Start() {
         //if (minimap == null)
         //minimap = new Material(Shader.Find("Standard"));
+        loadFromFile();
+    }
+
+    public void loadFromFile() {
         if (loadMapFromFile == "")
             return;
         FileStream fs = File.Open(loadMapFromFile, FileMode.Open);
@@ -67,6 +82,9 @@ public class Map : MonoBehaviour
     public void clearMap() {
         mapHeight = 0;
         mapWidth = 0;
+        Transform floor = transform.FindChild("Floor");
+        if (floor != null)
+            Destroy(floor.gameObject);
         foreach (Transform child in wallsParent.transform) {
             Destroy(child.gameObject);
         }

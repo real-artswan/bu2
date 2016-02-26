@@ -108,6 +108,7 @@ public class Minimap : MonoBehaviour
                     if ((player == gameState.thisPlayer) || (player.status != BaboPlayerStatus.PLAYER_STATUS_ALIVE) ||
                         ((player.teamID != BaboPlayerTeamID.PLAYER_TEAM_BLUE) && (player.teamID != BaboPlayerTeamID.PLAYER_TEAM_RED)))
                         continue;
+
                     if ((myTeam != player.teamID) && (player.firedShowDelay > 0)) {
                         Vector3 pEnemyCenter = new Vector3(
                             player.currentCF.position.x + gameState.map.wShift,

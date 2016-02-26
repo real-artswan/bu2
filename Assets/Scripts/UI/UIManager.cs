@@ -94,6 +94,11 @@ public class UIManager : MonoBehaviour
             gameState.thisPlayer.setWeaponType((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
     }
 
+    public void setSecobdaryWeapon(Toggle sender) {
+        if (sender.isOn && (gameState.thisPlayer != null))
+            gameState.thisPlayer.setWeapon2Type((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
+    }
+
     public void askAssignTeam(Button sender) {
         BaboPlayerTeamID team = (BaboPlayerTeamID)Enum.Parse(typeof(BaboPlayerTeamID), sender.name);
         gameState.thisPlayerAskTeam(team);

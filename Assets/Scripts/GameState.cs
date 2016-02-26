@@ -9,6 +9,11 @@ public class GameState : MonoBehaviour
     public GameObject flagModel;
     public GameObject baboModel;
     public ParticleSystem explosionModel;
+    public ParticleSystem flameFlowPrefab;
+    public ParticleSystem shootFirePrefab;
+    public ParticleSystem stopSmokePrefab;
+    public Trail bulletTrailPrefab;
+    public Trail photonTrailPrefab;
     public NetConnection connection;
     public GlobalGameVariables gameVars;
     public GlobalServerVariables serverVars;
@@ -20,8 +25,7 @@ public class GameState : MonoBehaviour
     internal PlayerState thisPlayer;
     internal Voting voting = new Voting();
     internal Dictionary<byte, PlayerState> players = new Dictionary<byte, PlayerState>();
-    internal List<ProjectileState> projectiles = new List<ProjectileState>();
-    internal List<Trail> trails = new List<Trail>();
+    private List<ProjectileState> projectiles = new List<ProjectileState>();
     internal BaboFlagsState flagsState = new BaboFlagsState();
 
     internal List<string> chatMessages = new List<string>();
@@ -46,6 +50,7 @@ public class GameState : MonoBehaviour
         return _roundState;
     }
     private BaboGameType _gameType = BaboGameType.GAME_TYPE_DM;
+
     internal BaboGameType getGameType() {
         return _gameType;
     }
@@ -63,9 +68,9 @@ public class GameState : MonoBehaviour
         foreach (PlayerState ps in players.Values) {
             ps.reset();
         }
-        foreach (Trail trail in trails)
+        /*foreach (Trail trail in trails)
             trail.destroy();
-        trails.Clear();
+        trails.Clear();*/
         foreach (ProjectileState projectile in projectiles)
             projectile.destroy();
         projectiles.Clear();
@@ -118,14 +123,14 @@ public class GameState : MonoBehaviour
             updateFlagPosition(flagsState[BaboTeamColor.RED], redFlag.transform, map.redFlagPod.transform.position);
         }
         //draw trails
-        int i = 0;
+        /*int i = 0;
         while (i < trails.Count) {
             Trail trail = trails[i];
-            if (!trail.update())
+            if (trail = null)
                 trails.Remove(trail);
             else
                 i++;
-        }
+        } */
         //draw projectiles
         foreach (ProjectileState projectile in projectiles) {
             projectile.update();
@@ -192,7 +197,7 @@ public class GameState : MonoBehaviour
     }
 
     public void thisPlayerAskTeam(BaboPlayerTeamID team) {
-        if (thisPlayer.teamID == team)
+        if ((thisPlayer == null) || (thisPlayer.teamID == team))
             return;
         net_clsv_svcl_team_request teamRequest;
         teamRequest.playerID = thisPlayer.playerID;
@@ -251,47 +256,68 @@ public class GameState : MonoBehaviour
         //if (Debug.isDebugBuild)
         //  Debug.LogFormat("Shoot: {0}->{1}, id {3}", position1.ToString(), position2.ToString(), nuzzleID);
 
-        float dmg = serverVars.weaponsVars.vars[shootWeapon].damage;
-        Color trailColor = Color.grey;
+        float dmg = serverVars.weaponsVars.getWeapon(shootWeapon).damage;
+        Color trailColor = BaboUtils.getTeamColor(teamID);
+        /*if (Debug.isDebugBuild)
+            Debug.LogFormat("Impact from team {0} with color {1}", teamID.ToString(), trailColor.ToString());*/
         switch (shootWeapon) {
             case BaboWeapon.WEAPON_FLAME_THROWER:
                 //spawn fire
+                ParticleSystem flame = Instantiate(flameFlowPrefab, position1, Quaternion.identity) as ParticleSystem;
+                flame.gameObject.transform.LookAt(position2);
+                flame.startLifetime = (position2 - position1).magnitude / 10;
+                flame.Play();
                 return;
             case BaboWeapon.WEAPON_PHOTON_RIFLE:
-                switch (teamID) {
-                    case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
-                        trailColor = new Color(0.25f, 0.25f, 0.9f, 1);
-                        break;
-                    case BaboPlayerTeamID.PLAYER_TEAM_RED:
-                        trailColor = new Color(0.9f, 0.25f, 0.25f, 1);
-                        break;
-                }
                 dmg = 2.0f;
-                trails.Add(new Trail(position1, position2, dmg, trailColor, dmg * 4, 0));
+                Trail trail = Instantiate<Trail>(photonTrailPrefab);
+                trail.spawnTrail(position1, position2, dmg, trailColor, dmg * 4, 0);
                 for (int i = 2; i < 5; i++)
-                    trails.Add(new Trail(position1, position2, dmg / (float)Math.Pow(2, i), trailColor, dmg, 1));
+                    Instantiate<Trail>(photonTrailPrefab).spawnTrail(position1, position2, dmg / (float)Math.Pow(2, i), trailColor, dmg, 1);
                 break;
             default:
-                switch (teamID) {
-                    case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
-                        trailColor = new Color(0.5f, 0.5f, 0.9f, 1);
-                        break;
-                    case BaboPlayerTeamID.PLAYER_TEAM_RED:
-                        trailColor = new Color(0.9f, 0.5f, 0.5f, 1);
-                        break;
-                }
-                trails.Add(new Trail(position1, position2, dmg, trailColor, dmg * 4, 0));
+                Instantiate<Trail>(bulletTrailPrefab).spawnTrail(position1, position2, dmg, trailColor, dmg * 4, 0);
+                //spawn shot's glow and smoke
+                ParticleSystem shoot = Instantiate(shootFirePrefab, position1, Quaternion.identity) as ParticleSystem;
+                shoot.gameObject.transform.LookAt(position2);
+                //shoot.transform.localScale = shoot.transform.localScale;
+                shoot.Play();
+
+                ParticleSystem smoke = Instantiate(stopSmokePrefab, position2, Quaternion.identity) as ParticleSystem;
+                smoke.gameObject.transform.LookAt(position1);
+                //shoot.transform.localScale = shoot.transform.localScale;
+                smoke.Play();
                 break;
         }
-        //spawn shot's glow and smoke
-        ParticleSystem shoot = Instantiate(Resources.Load<ParticleSystem>("models/smgFire"), position1, Quaternion.identity) as ParticleSystem;
-        shoot.gameObject.transform.LookAt(position2);
-        //shoot.transform.localScale = shoot.transform.localScale;
-        shoot.Play();
+    }
 
-        ParticleSystem smoke = Instantiate(Resources.Load<ParticleSystem>("models/stopSmoke"), position2, Quaternion.identity) as ParticleSystem;
-        smoke.gameObject.transform.LookAt(position1);
-        //shoot.transform.localScale = shoot.transform.localScale;
-        smoke.Play();
+    internal void AddProjectile(ProjectileState projectile) {
+        switch (projectile.typeID) {
+            case BaboProjectileType.PROJECTILE_DIRECT:
+            case BaboProjectileType.PROJECTILE_ROCKET:
+            case BaboProjectileType.PROJECTILE_GRENADE:
+            case BaboProjectileType.PROJECTILE_COCKTAIL_MOLOTOV:
+                PlayerState ps;
+                if (players.TryGetValue(projectile.playerID, out ps))
+                    ps.firedShowDelay = 2;
+                break;
+        }
+        projectiles.Add(projectile);
+    }
+
+    internal void DeleteProjectile(int projectileID) {
+        ProjectileState ps = projectiles.Find(p => p.uniqueID == projectileID);
+        if (ps == null)
+            return;
+        projectiles.Remove(ps);
+        ps.destroy();
+    }
+
+    internal void StickProjectile(short projectileID, byte playerID) {
+        //projectileID here is not ID but index in list of projectiles (omg)
+        if (projectileID >= projectiles.Count)
+            return;
+        //ok, lets pray it is right projectile
+        projectiles[projectileID].stickToPlayer = playerID;
     }
 }

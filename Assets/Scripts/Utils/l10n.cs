@@ -32,4 +32,5 @@
     public static string teamWin = "{0} WIN";
     public static string gameDraw = "DRAW";
     public static string gameMapChange = "MAP IS CHANGING";
+    public static string roundRestarting = "RESTARTING";
 }
