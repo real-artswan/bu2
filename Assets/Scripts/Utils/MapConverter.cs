@@ -5,10 +5,11 @@ namespace Utils
 {
     public class MapConverter
     {
-        public static void createMinimap(BaboMap baboMap, int scaleFactor, ref Material minimap) {
+        public static void createMinimap(BaboMap baboMap, int scaleFactor, Material material) {
             //prepare minimap
-            Texture2D minimapTex = new Texture2D(baboMap.width * scaleFactor, baboMap.height * scaleFactor, TextureFormat.ARGB32, false);
-            minimap.mainTexture = minimapTex;
+            Texture2D minimapTex = new Texture2D(baboMap.width * scaleFactor,
+                baboMap.height * scaleFactor, TextureFormat.ARGB32, false);
+
             //transparent background
             Color32[] clear = new Color32[minimapTex.width * minimapTex.height];
             Color32 cleanColor = new Color(0, 0, 0, 0);
@@ -20,7 +21,7 @@ namespace Utils
             //prepare wall pixels block
             Color32[] pixelsBlock = new Color32[scaleFactor * scaleFactor];
             for (i = 0; i < pixelsBlock.Length; i++)
-                pixelsBlock[i] = minimap.color;
+                pixelsBlock[i] = material.color;
 
             //draw walls
             for (int hInd = 0; hInd < baboMap.height; hInd++) {
@@ -32,6 +33,7 @@ namespace Utils
             }
 
             minimapTex.Apply(false);
+            material.mainTexture = minimapTex;
         }
 
         public static void CreateUnityMap(BaboMap baboMap, Map mapObject) {
@@ -51,6 +53,7 @@ namespace Utils
                 dirtTex = mapObject.defaultDirtTexture;
 
             GameObject floor = new GameObject();
+            floor.isStatic = true;
             floor.name = "Floor";
             BoxCollider floorCollider = floor.AddComponent<BoxCollider>();
             floorCollider.size = new Vector3(baboMap.width, 0.5f, baboMap.height);
@@ -95,10 +98,11 @@ namespace Utils
                         wall.transform.localScale = new Vector3(1, cell.height, 1);
                         //texture (need new Material for each wall to be able to scale texture separately)
                         Renderer wallRender = wall.GetComponent<Renderer>();
-                        Material wallMat = new Material(wallRender.material);
+                        //Material wallMat = new Material(wallRender.material);
+                        Material wallMat = wallRender.material;
                         wallMat.mainTexture = wallTex;
                         wallMat.mainTextureScale = new Vector2(1, cell.height);
-                        wallRender.material = wallMat;
+                        //wallRender.material = wallMat;
                     }
                 }
             }

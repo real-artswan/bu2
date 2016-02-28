@@ -3,8 +3,6 @@ using UnityEngine;
 
 public class ProjectileState
 {
-    public static float GRAVITY = 9.8f;
-
     internal GameState gameState = null;
 
     internal BaboProjectileType typeID = BaboProjectileType.PROJECTILE_NONE;
@@ -126,7 +124,7 @@ public class ProjectileState
             case BaboProjectileType.PROJECTILE_GRENADE:
 
                 position += newVelocity * delay;
-                newVelocity.y -= GRAVITY * delay;
+                newVelocity.y -= GlobalServerVariables.GRAVITY * delay;
                 if (Physics.Raycast(currentPos, newVelocity, out hitInfo, Vector3.Distance(currentPos, position))) {
                     position = position + hitInfo.normal * .01f;
                     newVelocity = Vector3.Reflect(newVelocity, hitInfo.normal);
@@ -135,11 +133,11 @@ public class ProjectileState
                 break;
             case BaboProjectileType.PROJECTILE_COCKTAIL_MOLOTOV:
                 position += newVelocity * delay;
-                newVelocity.y -= GRAVITY * delay;
+                newVelocity.y -= GlobalServerVariables.GRAVITY * delay;
                 break;
             case BaboProjectileType.PROJECTILE_FLAME:
                 position += newVelocity * delay;
-                newVelocity.y -= GRAVITY * delay;
+                newVelocity.y -= GlobalServerVariables.GRAVITY * delay;
                 if (Physics.Raycast(currentPos, newVelocity, out hitInfo, Vector3.Distance(currentPos, position))) {
                     position = position + hitInfo.normal * .01f;
                     newVelocity = Vector3.zero;

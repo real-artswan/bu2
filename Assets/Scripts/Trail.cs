@@ -45,9 +45,7 @@ public class Trail : MonoBehaviour
 
     private void updateInTime() {
         float coeff = duration / startDuration;
-        Vector3 perpVector = Vector3.Cross(Vector3.up, normal);
-        float dist = perpVector.magnitude;
-        perpVector = perpVector.normalized;
+        Vector3 perpVector = Vector3.Cross(Vector3.up, normal).normalized;
         float newSize = size / sizeDivider * coeff;
 
         for (int i = 0; i < points.Length; i++) {

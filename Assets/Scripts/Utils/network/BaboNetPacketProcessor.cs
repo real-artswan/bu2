@@ -67,16 +67,14 @@ namespace BaboNetwork
                     doBadChecksumInfo((net_svcl_bad_checksum_info)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_CLSV_SVCL_PLAYER_INFO:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: player info");
+                    BaboUtils.Log("PCKT: player info {0}", DateTime.Now - rawPacket.created);
                     doPlayerInfo((net_clsv_svcl_player_info)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_CLSV_SVCL_CHAT:
                     doChat((net_clsv_svcl_chat)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_CLSV_SVCL_TEAM_REQUEST:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: team request");
+                    BaboUtils.Log("PCKT: team request {0}", DateTime.Now - rawPacket.created);
                     doTeamRequest((net_clsv_svcl_team_request)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_CLSV_SVCL_PLAYER_COORD_FRAME:
@@ -101,19 +99,18 @@ namespace BaboNetwork
                     doVoteRequest((net_clsv_svcl_vote_request)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_MAP_CHUNK:
+                    BaboUtils.Log("Map chunk {0}", DateTime.Now - rawPacket.created);
                     doMapChunk((net_svcl_map_chunk)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_MAP_LIST:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: map list");
+                    BaboUtils.Log("Map list {0}", DateTime.Now - rawPacket.created);
                     doMapList((net_svcl_map_list)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_CLSV_SVCL_PLAYER_UPDATE_SKIN:
                     doPlayerUpdateSkin((net_clsv_svcl_player_update_skin)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_HASH_SEED:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: hash seed");
+                    BaboUtils.Log("PCKT: hash seed {0}", DateTime.Now - rawPacket.created);
                     doHashSeed((net_svcl_hash_seed)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_EXPLOSION:
@@ -126,11 +123,11 @@ namespace BaboNetwork
                     doPlaySound((net_svcl_play_sound)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_GAMEVERSION:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: game version");
+                    BaboUtils.Log("PCKT: game version", DateTime.Now - rawPacket.created);
                     doGameVersion((net_svcl_gameversion)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_SYNCHRONIZE_TIMER:
+                    //BaboUtils.Log("PCKT: sync timer {0}", DateTime.Now - rawPacket.created);
                     doSyncTimer((net_svcl_synchronize_timer)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_CHANGE_FLAG_STATE:
@@ -143,49 +140,43 @@ namespace BaboNetwork
                     doFlagEnum((net_svcl_flag_enum)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_GAME_STATE:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: game state");
+                    BaboUtils.Log("PCKT: game state {0}", DateTime.Now - rawPacket.created);
                     doGameState((net_svcl_game_state)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_CHANGE_GAME_TYPE:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: game type change");
+                    BaboUtils.Log("PCKT: game type change {0}", DateTime.Now - rawPacket.created);
                     doChangeGameType((net_svcl_change_game_type)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_MAP_CHANGE:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: map change");
+                    BaboUtils.Log("PCKT: map change {0}", DateTime.Now - rawPacket.created);
                     doMapChange((net_svcl_map_change)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_SERVER_INFO:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: server info");
+                    BaboUtils.Log("PCKT: server info {0}", DateTime.Now - rawPacket.created);
                     doServerInfo((net_svcl_server_info)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_SERVER_DISCONNECT:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: server disconnect");
+                    BaboUtils.Log("PCKT: server disconnect {0}", DateTime.Now - rawPacket.created);
                     doServerDisconnect();
                     break;
                 case BaboPacketTypeID.NET_SVCL_PLAYER_DISCONNECT:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: player disconnect");
+                    BaboUtils.Log("PCKT: player disconnect {0}", DateTime.Now - rawPacket.created);
                     doPlayerDisconnect((net_svcl_player_disconnect)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_PLAYER_ENUM_STATE:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: player enum");
+                    BaboUtils.Log("PCKT: player enum {0}", DateTime.Now - rawPacket.created);
                     doPlayerEnumState((net_svcl_player_enum_state)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_PING:
+                    //BaboUtils.Log("PCKT: ping {0}", DateTime.Now - rawPacket.created);
                     doPing((net_svcl_ping)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_PLAYER_PING:
+                    //BaboUtils.Log("PCKT: player ping {0}", DateTime.Now - rawPacket.created);
                     doPlayerPing((net_svcl_player_ping)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_PLAYER_SPAWN:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: player spawn");
+                    BaboUtils.Log("PCKT: player spawn {0}", DateTime.Now - rawPacket.created);
                     doPlayerSpawn((net_svcl_player_spawn)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_SV_CHANGE:
@@ -198,8 +189,7 @@ namespace BaboNetwork
                     doDeleteProjectile((net_svcl_delete_projectile)parsedPacket);
                     break;
                 case BaboPacketTypeID.NET_SVCL_NEWPLAYER:
-                    if (Debug.isDebugBuild)
-                        Debug.Log("PCKT: player new");
+                    BaboUtils.Log("PCKT: new player {0}", DateTime.Now - rawPacket.created);
                     doNewPlayer((net_svcl_newplayer)parsedPacket);
                     break;
                 default:
@@ -236,7 +226,7 @@ namespace BaboNetwork
                 gameState.thisPlayer.currentCF.vel += direction * gameState.serverVars.weaponsVars.getWeapon(shootWeapon).damage * 2;
             }
             whoShoot.shootDelay = 2;
-            gameState.spawnImpact(p1, p2, shootWeapon, whoShoot.teamID, playerShoot.nuzzleID);
+            gameState.spawnImpact(p1, p2, shootWeapon, whoShoot.getTeamID(), playerShoot.nuzzleID);
         }
 
         private void doPlayerHit(net_svcl_player_hit playerHit) {
@@ -397,6 +387,7 @@ namespace BaboNetwork
             if (isDownloadingMap && (gameState.thisPlayer != null)) {
                 // Map has been recieved when last chunk is 0
                 if (parsedPacket.size == 0) {
+                    BaboUtils.Log("Map download complete");
                     isDownloadingMap = false;
                     gameState.map.mapBuffer.Position = 0;
                     gameState.map.createMap();
@@ -404,7 +395,6 @@ namespace BaboNetwork
                         gameState.needToShutDown = true;
                         return;
                     }
-                    gameState.minimap.updateControlSize();
 
                     // Re-query server info
                     net_clsv_gameversion_accepted gameVersionAccepted = new net_clsv_gameversion_accepted(true);
@@ -427,7 +417,7 @@ namespace BaboNetwork
             if (gameState.thisPlayer == null)
                 return;
             if ((parsedPacket.teamID <= (int)BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
-                || (parsedPacket.teamID == (int)gameState.thisPlayer.teamID)) {
+                || (parsedPacket.teamID == (int)gameState.thisPlayer.getTeamID())) {
                 gameState.chatMessages.Add(BaboUtils.baboBytesToString(parsedPacket.message, true));
             }
         }
@@ -468,7 +458,7 @@ namespace BaboNetwork
                 Debug.LogFormat("Player team request {0}", teamRequest.playerID);
             PlayerState playerState;
             if (gameState.players.TryGetValue(teamRequest.playerID, out playerState)) {
-                playerState.teamID = (BaboPlayerTeamID)teamRequest.teamRequested;
+                playerState.setTeamID((BaboPlayerTeamID)teamRequest.teamRequested);
                 if (playerState = gameState.thisPlayer)
                     gameState.thisPlayerTeamAssigned();
             }
@@ -487,7 +477,7 @@ namespace BaboNetwork
             ps.body.redDecal = BaboUtils.fromBaboColor(updateSkin.redDecal);
             BaboPlayerTeamID teamColor = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
             if ((gameState.getGameType() != BaboGameType.GAME_TYPE_DM) || (gameState.getGameType() != BaboGameType.GAME_TYPE_SND))
-                teamColor = ps.teamID;
+                teamColor = ps.getTeamID();
             ps.body.updateSkin(teamColor);
         }
 
@@ -529,7 +519,7 @@ namespace BaboNetwork
             ;
             BaboPlayerTeamID teamColor = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
             if ((gameState.getGameType() != BaboGameType.GAME_TYPE_DM) && (gameState.getGameType() != BaboGameType.GAME_TYPE_SND))
-                teamColor = ps.teamID;
+                teamColor = ps.getTeamID();
             ps.body.updateSkin(teamColor);
             ps.setWeaponType((BaboWeapon)playerSpawn.weaponID);
             ps.setWeapon2Type((BaboWeapon)playerSpawn.meleeID);
@@ -557,7 +547,7 @@ namespace BaboNetwork
             ps.flagAttempts = (int)playerEnum.flagAttempts;
             ps.damage = (int)playerEnum.damage;
             ps.status = (BaboPlayerStatus)playerEnum.status;
-            ps.teamID = (BaboPlayerTeamID)playerEnum.teamID;
+            ps.setTeamID((BaboPlayerTeamID)playerEnum.teamID);
             ps.setWeaponType((BaboWeapon)playerEnum.weaponID);
             ps.life = playerEnum.life;
             ps.dmg = playerEnum.dmg;
@@ -568,7 +558,7 @@ namespace BaboNetwork
             ps.body.redDecal = BaboUtils.fromBaboColor(playerEnum.redDecal);
             BaboPlayerTeamID teamColor = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
             if ((gameState.getGameType() != BaboGameType.GAME_TYPE_DM) || (gameState.getGameType() != BaboGameType.GAME_TYPE_SND))
-                teamColor = ps.teamID;
+                teamColor = ps.getTeamID();
             ps.body.updateSkin(teamColor);
 
             gameState.eventMessages.Add(string.Format(l10n.addingPlayer, ps.playerName));
@@ -665,7 +655,7 @@ namespace BaboNetwork
                 case FlagStateID.ON_FLOOR: //handles by net_svcl_drop_flag message
                     break;
                 case FlagStateID.ON_POD:
-                    if (flagState.flagID == (byte)ps.teamID) {
+                    if (flagState.flagID == (byte)ps.getTeamID()) {
                         ps.returns++;
                         if ((BaboPlayerTeamID)flagState.flagID == BaboPlayerTeamID.PLAYER_TEAM_RED)
                             eventMsg = string.Format(l10n.playerReturnedFlag, ps.playerName, l10n.red);
@@ -674,7 +664,7 @@ namespace BaboNetwork
                     }
                     else {
                         ps.score++;
-                        switch (ps.teamID) {
+                        switch (ps.getTeamID()) {
                             case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
                                 gameState.blueTeamScore++;
                                 eventMsg = string.Format(l10n.playerScoresFlag, ps.playerName, l10n.blue);
@@ -684,7 +674,7 @@ namespace BaboNetwork
                                 eventMsg = string.Format(l10n.playerScoresFlag, ps.playerName, l10n.red);
                                 break;
                             default:
-                                Debug.LogFormat("Player {0} from team {1} must not score flag", ps.playerID, ps.teamID.ToString());
+                                Debug.LogFormat("Player {0} from team {1} must not score flag", ps.playerID, ps.getTeamID().ToString());
                                 return;
                         }
                     }

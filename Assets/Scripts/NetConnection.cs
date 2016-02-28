@@ -44,6 +44,8 @@ public class NetConnection : MonoBehaviour
     }
 
     private IEnumerator readLoop() {
+        if (Debug.isDebugBuild)
+            Debug.Log("Read loop started");
         while (connected) {
             while (recievedPackets.Count > 0) {
                 BaboRawPacket packet = recievedPackets.Dequeue();
@@ -58,6 +60,8 @@ public class NetConnection : MonoBehaviour
     }
 
     private IEnumerator writeLoop() {
+        if (Debug.isDebugBuild)
+            Debug.Log("Write loop started");
         while (connected) {
             while (packetsToSend.Count > 0) {
                 while ((writeResult != null) && (!writeResult.IsCompleted)) //wait while writing prev buffer
@@ -74,7 +78,7 @@ public class NetConnection : MonoBehaviour
                     shutdownError = true;
                 }
             }
-            yield return new WaitForFixedUpdate();
+            yield return new WaitForEndOfFrame();
         }
     }
 

@@ -5,6 +5,8 @@ namespace BaboNetwork
 {
     public class BaboRawPacket
     {
+        public DateTime created = DateTime.Now;
+
         public static ushort HEADER_SIZE = 4;
 
         public byte[] header = new byte[4]; //(UInt16 Size, UInt16 TypeID)

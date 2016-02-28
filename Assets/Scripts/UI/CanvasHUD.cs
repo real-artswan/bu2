@@ -34,7 +34,7 @@ public class CanvasHUD : MonoBehaviour
             case BaboGameType.GAME_TYPE_DM:
                 topCounter.gameObject.SetActive(
                     (gameState.thisPlayer != null) &&
-                    (gameState.thisPlayer.teamID != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR));
+                    (gameState.thisPlayer.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR));
                 setFlagsActive(false);
                 break;
             case BaboGameType.GAME_TYPE_TDM:
@@ -44,7 +44,7 @@ public class CanvasHUD : MonoBehaviour
                 setFlagsActive(true);
                 break;
         }
-        if ((gameState.thisPlayer != null) && (gameState.thisPlayer.teamID != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)) {
+        if ((gameState.thisPlayer != null) && (gameState.thisPlayer.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)) {
             nades.gameObject.transform.parent.gameObject.SetActive(true);
             molotovs.gameObject.transform.parent.gameObject.SetActive(true);
             health.gameObject.SetActive(true);

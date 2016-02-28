@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class PingGraph : MonoBehaviour
@@ -11,8 +10,9 @@ public class PingGraph : MonoBehaviour
     private int[] data;
     private int currIndex = 0;
     private Texture2D texture;
-    private Color32[] cleanLine;
-    private Color32[] filledLine;
+    private int width, height;
+    private Color32[] drawLine;
+    private Color32 cleanColor;
 
     internal void setPing(int ping) {
         if (data == null)
@@ -31,20 +31,17 @@ public class PingGraph : MonoBehaviour
         //texture to draw on
         RectTransform rt = GetComponent<RectTransform>();
         RawImage img = GetComponent<RawImage>();
-        texture = new Texture2D((int)rt.rect.width, (int)rt.rect.height, TextureFormat.ARGB32, false);
+        width = (int)rt.rect.width;
+        height = (int)rt.rect.height;
+        texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
         Material mat = new Material(img.material);
         mat.mainTexture = texture;
         img.material = mat;
 
         data = new int[texture.width];
-        yScale = texture.height / (float)maxValue;
-        //colors caches for performance reason
-        cleanLine = new Color32[texture.height];
-        filledLine = new Color32[texture.height];
-        for (int i = 0; i < texture.height; i++) {
-            cleanLine[i] = img.material.color;
-            filledLine[i] = drawColor;
-        }
+        yScale = height / (float)maxValue;
+        drawLine = new Color32[height];
+        cleanColor = img.material.color;
     }
 
     void Update() {
@@ -53,10 +50,12 @@ public class PingGraph : MonoBehaviour
     }
 
     private void drawData() {
-        Color32[] drawLine = new Color32[texture.height];
-        for (int i = 0; i < texture.width; i++) {
-            Array.Copy(cleanLine, drawLine, drawLine.Length);
-            Array.Copy(filledLine, 0, drawLine, 0, (int)(data[i] * yScale));
+        for (int i = 0; i < width; i++) {
+            int top = (int)(data[i] * yScale);
+            for (int j = 0; j < top; j++)
+                drawLine[j] = drawColor;
+            for (int j = top; j < height; j++)
+                drawLine[j] = cleanColor;
 
             texture.SetPixels32(i, 0, 1, drawLine.Length, drawLine);
         }

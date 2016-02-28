@@ -10,7 +10,7 @@ namespace BaboUI
 
         public void bePlayer(PlayerState player) {
             GetComponent<Image>().color = new Color(0, 0, 0, 0.5f);
-            if ((player.status == BaboPlayerStatus.PLAYER_STATUS_DEAD) && (player.teamID != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR))
+            if ((player.status == BaboPlayerStatus.PLAYER_STATUS_DEAD) && (player.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR))
                 PlayerName.text = string.Format("{0} {1}", l10n.playerDead, player.playerName);
             else
                 PlayerName.text = player.playerName;

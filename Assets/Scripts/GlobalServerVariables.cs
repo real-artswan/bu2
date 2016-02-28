@@ -2,6 +2,8 @@
 
 public class GlobalServerVariables : MonoBehaviour
 {
+    public static float GRAVITY = 9.8f;
+
     public int sv_autoBalanceTime = 4;
     public float sv_timeToSpawn = 5;
     public bool sv_forceRespawn = false;

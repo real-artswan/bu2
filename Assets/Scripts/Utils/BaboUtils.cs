@@ -5,6 +5,11 @@ using UnityEngine;
 
 public static class BaboUtils
 {
+    public static void Log(string msg, params object[] args) {
+        if (!Debug.isDebugBuild)
+            return;
+        Debug.LogFormat(DateTime.Now.ToString() + ": " + msg, args);
+    }
     public static Vector3 randomInsideBox(Vector3 from, Vector3 to) {
         return new Vector3(
             UnityEngine.Random.Range(from.x, to.x),

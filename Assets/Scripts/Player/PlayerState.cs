@@ -1,9 +1,9 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerState : MonoBehaviour
 {
     private GlobalServerVariables serverVars;
+    private GlobalGameVariables gameVars;
 
     public BaboBody body;
 
@@ -15,10 +15,13 @@ public class PlayerState : MonoBehaviour
     internal string playerName = "";
 
     internal byte playerID = 0;
-    internal Int32 netID = 0;
+    internal int netID = 0;
     internal string ip = "";
     internal short ping = 0;
-    internal BaboPlayerTeamID teamID = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
+    private BaboPlayerTeamID _teamID = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
+    internal BaboPlayerTeamID getTeamID() {
+        return _teamID;
+    }
 
     private BaboPlayerStatus _status = BaboPlayerStatus.PLAYER_STATUS_DEAD;
     internal BaboPlayerStatus status
@@ -41,9 +44,12 @@ public class PlayerState : MonoBehaviour
     private float _life = 1f;
     private int _nades = 3;
     private int _molotovs = 1;
-    private float timeToSpawn;
-    private float immuneTime;
-    private bool spawnRequested = false;
+    //private float timeToSpawn;
+    //private float immuneTime;
+    //private bool spawnRequested = false;
+    //private float grenadeDelay = 0;
+    //private float meleeDelay = 0;
+
     private BaboWeapon currentWeapon = BaboWeapon.WEAPON_SMG;
     private BaboWeapon currentWeapon2 = BaboWeapon.KNIVES;
     //internal BaboWeapon nextSpawnWeapon = BaboWeapon.WEAPON_SMG;
@@ -54,8 +60,6 @@ public class PlayerState : MonoBehaviour
     internal float camPosZ = 5;
 
     internal float shootDelay = 0;
-    private float grenadeDelay = 0;
-    private float meleeDelay = 0;
 
     internal float firedShowDelay = 0;
 
@@ -67,12 +71,17 @@ public class PlayerState : MonoBehaviour
             if (go != null)
                 serverVars = go.GetComponent<GlobalServerVariables>();
         }
+        if (gameVars == null) {
+            GameObject go = GameObject.Find("GlobalGameVariables");
+            if (go != null)
+                gameVars = go.GetComponent<GlobalGameVariables>();
+        }
     }
 
     void Update() {
         if (status != BaboPlayerStatus.PLAYER_STATUS_ALIVE) {
             firedShowDelay = 0;
-            meleeDelay = 0;
+            //meleeDelay = 0;
             transform.position = Hidden_Position;
             return;
         }
@@ -120,14 +129,14 @@ public class PlayerState : MonoBehaviour
         //timeDead = 0.0f;
         //timeAlive = 0.0f;
         //timeIdle = 0.0f;
-        spawnRequested = false;
+        //spawnRequested = false;
 
         currentCF.position = spawnPoint;
         currentCF.vel = Vector3.zero;
         //currentCF.angle = 0f;
 
-        grenadeDelay = 0;
-        meleeDelay = 0;
+        //grenadeDelay = 0;
+        //meleeDelay = 0;
         shootDelay = 0;
 
         _nades = MAX_NADES;
@@ -148,15 +157,18 @@ public class PlayerState : MonoBehaviour
     }
 
     internal void hit(BaboWeapon fromWeapon, PlayerState fromHit, float damage) {
-        /*if (Debug.isDebugBuild)
-            Debug.LogFormat("{0} hit by {1}, {2}, damage {3}. Health: {4}", playerID, fromHit.playerID, fromWeapon.ToString(), damage, _life);*/
+        BaboUtils.Log("{0} hit by {1}, {2}, damage {3}. Health: {4}", playerID, fromHit.playerID, fromWeapon.ToString(), damage, _life);
+        gameVars.bloodMarkPrefab.createBloodMark(transform.position, _life - damage, gameVars.bloodMaterials, gameVars.terrainMarksLifeTime);
         _life = damage;
-        if (_life < 0)
+
+        if (_life < 0) {
             status = BaboPlayerStatus.PLAYER_STATUS_DEAD;
+            gameVars.bloodMarkPrefab.createBloodMark(transform.position, 1, gameVars.bloodMaterials, gameVars.terrainMarksLifeTime);
+        }
     }
 
     internal void reset() {
-        teamID = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
+        _teamID = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
         status = BaboPlayerStatus.PLAYER_STATUS_DEAD;
         kills = 0;
         deaths = 0;
@@ -169,11 +181,11 @@ public class PlayerState : MonoBehaviour
         _life = 1f;
         _nades = MAX_NADES;
         _molotovs = MAX_MOLOTOVS;
-        timeToSpawn = 3;
+        /*timeToSpawn = 3;
         immuneTime = 1;
         spawnRequested = false;
         grenadeDelay = 0;
-        meleeDelay = 0;
+        meleeDelay = 0;*/
         //nextSpawnWeapon = BaboWeapon.WEAPON_SMG;
         //nextSecondaryWeapon = BaboWeapon.KNIVES;
 
@@ -209,7 +221,6 @@ public class PlayerState : MonoBehaviour
         mainWeapon.transform.parent = gameObject.transform;
         mainWeapon.transform.localRotation = new Quaternion(0, 180, 0, 0);
         mainWeapon.transform.localPosition = new Vector3(0, -0.25f, 0);
-        //mainWeapon.transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
     }
 
     internal BaboWeapon getWeaponType() {
@@ -240,9 +251,6 @@ public class PlayerState : MonoBehaviour
         secondaryWeapon = Instantiate(weaponModel);
         secondaryWeapon.transform.position = gameObject.transform.position;
         secondaryWeapon.transform.parent = gameObject.transform;
-        //secondaryWeapon.transform.localRotation = new Quaternion(0, 180, 0, 0);
-        //secondaryWeapon.transform.localPosition = new Vector3(0, -0.5f, 0);
-        //secondaryWeapon.transform.localScale = new Vector3(0.5f, 0.5f, 0.33f);
     }
 
     internal BaboWeapon getWeapon2Type() {
@@ -251,6 +259,16 @@ public class PlayerState : MonoBehaviour
 
     internal void shootSecondary() {
         secondaryWeapon.GetComponent<Animator>().SetTrigger("Play");
-        meleeDelay = 2;
+        //meleeDelay = 2;
+    }
+
+    internal void setTeamID(BaboPlayerTeamID teamID) {
+        _teamID = teamID;
+        switch (teamID) {
+            case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
+            case BaboPlayerTeamID.PLAYER_TEAM_RED:
+                transform.position = Hidden_Position;
+                break;
+        }
     }
 }

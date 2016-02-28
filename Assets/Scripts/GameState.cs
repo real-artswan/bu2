@@ -197,7 +197,7 @@ public class GameState : MonoBehaviour
     }
 
     public void thisPlayerAskTeam(BaboPlayerTeamID team) {
-        if ((thisPlayer == null) || (thisPlayer.teamID == team))
+        if ((thisPlayer == null) || (thisPlayer.getTeamID() == team))
             return;
         net_clsv_svcl_team_request teamRequest;
         teamRequest.playerID = thisPlayer.playerID;
@@ -225,7 +225,7 @@ public class GameState : MonoBehaviour
         }
         spectator.SetActive(
             (getRoundState() == BaboRoundState.GAME_PLAYING) && (
-                (thisPlayer == null) || (thisPlayer.teamID == BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
+                (thisPlayer == null) || (thisPlayer.getTeamID() == BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
                 )
             );
     }
@@ -244,11 +244,12 @@ public class GameState : MonoBehaviour
     }
 
     internal void spawnExplosion(Vector3 position, Vector3 normal, float radius) {
-        if (Debug.isDebugBuild)
-            Debug.LogFormat("Explosion at {0}, normal {1}, radius {2}", position.ToString(), normal.ToString(), radius);
+        //if (Debug.isDebugBuild)
+        //Debug.LogFormat("Explosion at {0}, normal {1}, radius {2}", position.ToString(), normal.ToString(), radius);
         ParticleSystem expl = Instantiate(explosionModel, position, Quaternion.LookRotation(normal)) as ParticleSystem;
         expl.transform.localScale = expl.transform.localScale * radius;
         expl.Play();
+        gameVars.explosionMarkPrefab.createExplosionMark(position, radius, gameVars.terrainMarksLifeTime);
     }
 
     internal void spawnImpact(Vector3 position1, Vector3 position2, BaboWeapon shootWeapon, BaboPlayerTeamID teamID, byte nuzzleID) {
