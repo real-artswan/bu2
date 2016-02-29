@@ -83,7 +83,7 @@ public class Minimap : MonoBehaviour
 
             spritesMaterial.SetPass(0);
 
-            foreach (PlayerState player in gameState.players.Values) {
+            foreach (PlayerState player in gameState.players) {
                 if ((player == gameState.thisPlayer)
                     || (player.status != BaboPlayerStatus.PLAYER_STATUS_ALIVE)
                     || ((player.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_BLUE)
@@ -107,7 +107,7 @@ public class Minimap : MonoBehaviour
             }
             if ((gameState.thisPlayer != null) && (gameState.thisPlayer.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)) {
                 float enemyMarkerR = gameState.map.minimapScaleFactor / 1.5f;
-                foreach (PlayerState player in gameState.players.Values) {
+                foreach (PlayerState player in gameState.players) {
                     if ((player == gameState.thisPlayer) || (player.status != BaboPlayerStatus.PLAYER_STATUS_ALIVE) ||
                         ((player.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_BLUE) && (player.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_RED)))
                         continue;

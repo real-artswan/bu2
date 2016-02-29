@@ -20,6 +20,7 @@
     public static string redTeam = "RED TEAM";
     public static string blueTeam = "BLUE TEAM";
     public static string specTeam = "SPECTATORS";
+    public static string freeForAll = "FREE FOR ALL";
     public static string playerName = "PLAYER NAME";
     public static string kills = "Kills";
     public static string death = "Death";

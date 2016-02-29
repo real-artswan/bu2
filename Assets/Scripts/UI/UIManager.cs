@@ -9,7 +9,7 @@ public class UIManager : MonoBehaviour
     public GameObject mainMenu;
     public GameObject gameMenu;
     public GameObject HUD;
-    public StatsTable statsTable;
+    public UIStats uiStats;
     public GlobalGameVariables gameVars;
     public Text gameMenuInfo;
     public NetConnection connection;
@@ -42,13 +42,13 @@ public class UIManager : MonoBehaviour
     }
 
     public void showStats(bool show) {
-        statsTable.gameObject.SetActive(show);
+        uiStats.gameObject.SetActive(show);
         gameState.updateSpectatorActivity(!show);
     }
 
     public void lockShowStats(bool lockStats) {
         this.lockStats = lockStats;
-        statsTable.gameObject.SetActive(lockStats);
+        uiStats.gameObject.SetActive(lockStats);
         gameState.updateSpectatorActivity(!lockStats);
     }
 

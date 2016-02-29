@@ -8,7 +8,7 @@ public static class BaboUtils
     public static void Log(string msg, params object[] args) {
         if (!Debug.isDebugBuild)
             return;
-        Debug.LogFormat(DateTime.Now.ToString() + ": " + msg, args);
+        Debug.LogFormat(DateTime.Now.ToString("hh:mm:ss.fff") + ": " + msg, args);
     }
     public static Vector3 randomInsideBox(Vector3 from, Vector3 to) {
         return new Vector3(
@@ -103,9 +103,42 @@ public static class BaboUtils
         return new Vector3(array[0], array[2], array[1]);
     }
 
-    //TODO: support babo colors(convert babo colors to unity richtext)
+    private static string[] TEXT_COLOR_MAP = new string[10]
+    {
+        "4040ff", "40ff40", "40ffff", "ff4040", "ff40ff", "ffb300", "808080",
+        "ffffff", "ffff00", "00ff00"
+    };
+    private static string COLOR_TEMPLATE_OPEN = "<color=#{0}>";
+    private static string COLOR_TEMPLATE_CLOSE = "</color>";
     public static string baboBytesToString(byte[] bytes, bool rtf) {
-        return Encoding.ASCII.GetString(bytes);
+        string str = Encoding.ASCII.GetString(bytes);
+        StringBuilder sb = new StringBuilder(str.Length);
+        if (!rtf) {
+            foreach (Char ch in str) {
+                if ((int)ch > 10)
+                    sb.Append(ch);
+                else {
+                    if ((int)ch == 0)
+                        break;
+                }
+            }
+        }
+        else {
+            string tail = "";
+            foreach (Char ch in str) {
+                if ((int)ch > 10)
+                    sb.Append(ch);
+                else {
+                    if (tail.Length != 0)
+                        sb.Append(tail);
+                    if ((int)ch == 0)
+                        break;
+                    sb.Append(string.Format(COLOR_TEMPLATE_OPEN, TEXT_COLOR_MAP[(int)ch - 1]));
+                    tail = COLOR_TEMPLATE_CLOSE;
+                }
+            }
+        }
+        return sb.ToString();
     }
 
     //TODO: support babo colors (convert unity richtext to babo colors)
@@ -113,18 +146,15 @@ public static class BaboUtils
         return Encoding.ASCII.GetBytes(str);
     }
 
-    public static Color fromBaboColor(byte[] colorArray) {
-        return new Color(
-                ((float)colorArray[0]) / 255.0f,
-                ((float)colorArray[1]) / 255.0f,
-                ((float)colorArray[2]) / 255.0f);
+    public static Color32 fromBaboColor(byte[] colorArray) {
+        return new Color32(colorArray[0], colorArray[1], colorArray[2], 255);
     }
 
-    public static byte[] toBaboColor(Color color) {
+    public static byte[] toBaboColor(Color32 color) {
         byte[] r = new byte[3];
-        r[0] = (byte)(color.r * 255f);
-        r[1] = (byte)(color.g * 255f);
-        r[2] = (byte)(color.b * 255f);
+        r[0] = color.r;
+        r[1] = color.g;
+        r[2] = color.b;
 
         return r;
     }
@@ -136,7 +166,7 @@ public static class BaboUtils
             case BaboPlayerTeamID.PLAYER_TEAM_RED:
                 return new Color(1, 0, 0, alpha);
             default:
-                return new Color(0.5f, 0.5f, 0.5f, 0.5f);
+                return new Color(1, 1, 1);
         }
     }
 
@@ -146,6 +176,8 @@ public static class BaboUtils
                 return l10n.blueTeam;
             case BaboPlayerTeamID.PLAYER_TEAM_RED:
                 return l10n.redTeam;
+            case BaboPlayerTeamID.PLAYER_TEAM_AUTO_ASSIGN:
+                return l10n.freeForAll;
             default:
                 return l10n.specTeam;
         }

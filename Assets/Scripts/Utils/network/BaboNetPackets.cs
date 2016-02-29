@@ -3,84 +3,84 @@ using System.Runtime.InteropServices;
 
 namespace BaboNetwork
 {
-	class BaboKey
-	{
-		public static string RND_KEY = "RND1";
-		public static ushort KEY_SIZE = 9;
-		public byte[] value = new byte[KEY_SIZE];
+    class BaboKey
+    {
+        public static string RND_KEY = "RND1";
+        public static ushort KEY_SIZE = 9;
+        public byte[] value = new byte[KEY_SIZE];
 
-	}
+    }
 
-    public enum BaboPacketTypeID 
+    public enum BaboPacketTypeID
     {
         NET_CLSV_PONG = 1,
         NET_CLSV_SPAWN_REQUEST = 2,
-		// La version du server est acceptй par le client
-		NET_CLSV_PLAYER_SHOOT = 3,
-		NET_CLSV_GAMEVERSION_ACCEPTED = 4,
-		// On demande au server de pickuper un item par terre
-		NET_CLSV_PICKUP_REQUEST = 5,
-		// On demande au server d'кtre admin!
-		NET_CLSV_ADMIN_REQUEST = 6,
-		// Vote
-		NET_CLSV_VOTE = 7,
-		// On map list request
-		NET_CLSV_MAP_LIST_REQUEST = 8,
+        // La version du server est acceptй par le client
+        NET_CLSV_PLAYER_SHOOT = 3,
+        NET_CLSV_GAMEVERSION_ACCEPTED = 4,
+        // On demande au server de pickuper un item par terre
+        NET_CLSV_PICKUP_REQUEST = 5,
+        // On demande au server d'кtre admin!
+        NET_CLSV_ADMIN_REQUEST = 6,
+        // Vote
+        NET_CLSV_VOTE = 7,
+        // On map list request
+        NET_CLSV_MAP_LIST_REQUEST = 8,
 
-		// Le server accept une new connection, il envoit а tout le monde le ID du joueur
-		NET_SVCL_NEWPLAYER = 101,
-		// Le server envoit ses info aux nouveaux clients
-		// Suivi de зa, il va lui envoyer la liste de tout les joueurs
-		// А partir de ce moment lа, le joueur devra recevoir tout les messages du server
-		// Pour garder l'йtat du server а jour
-		NET_SVCL_SERVER_INFO = 102,
-		// Le server fou le camp, il le dit а tout le monde (en moins quil plante lа)
-		NET_SVCL_SERVER_DISCONNECT = 103,
-		// Le client fou le camp, le server le sait tout suite, et le shoot au autres 
-		// (en moins quil plante lа)
-		NET_SVCL_PLAYER_DISCONNECT = 104,
-		// Le client fou le camp, le server le sait tout suite, et le shoot au autres 
-		// (en moins quil plante lа)
-		NET_SVCL_PLAYER_ENUM_STATE = 105,
-		// Le server envoit un ping а toute les seconde а tout les joueurs
-		NET_SVCL_PING = 106,
-		// Le server envoit а chaque seconde le ping de toute le monde а tout le monde
-		NET_SVCL_PLAYER_PING = 107,
-		// Le server reзois la request de spawner du joueur, et renvoit а TOUT le monde
-		// sa position de spawn
-		NET_SVCL_PLAYER_SPAWN = 108,
-		// Le server modifie une variable sv_, il va l'envoyer а tout le monde
-		// Les sv ce sont les seuls qui affectent le gameplay et que le server garde l'exclusivitйe
-		NET_SVCL_SV_CHANGE = 109,
-		// Un client a tirй, le server a effectuй la collision et renvoi le rйsultat aux autres joueurs
-		NET_SVCL_PLAYER_SHOOT = 110,
-		// Pour dire qu'on supprime un projectile
-		NET_SVCL_DELETE_PROJECTILE = 111,
-		// La position d'un projectile (uniquement controlй par le server)
-		NET_SVCL_PROJECTILE_COORD_FRAME = 112,
-		// Pour spawner une explosion
-		NET_SVCL_EXPLOSION = 113,
-		// Si on a touchй un joueur l'hors d'une explosion par exemple
-		NET_SVCL_PLAYER_HIT = 114,
-		// Le server emet un son et veut que les clients le jou
-		NET_SVCL_PLAY_SOUND = 115,
-		// La version du server
-		NET_SVCL_GAMEVERSION = 116,
-		// Pour synchroniser le temps des horloges du jeu
-		NET_SVCL_SYNCHRONIZE_TIMER = 117,
-		// Pour Changer l'йtat d'un flag
-		NET_SVCL_CHANGE_FLAG_STATE = 118,
-		// Un joueur est mort ou disconnectй, il laisse tomber le flag
-		// Le server communique alors la position exacte aux autres players
-		NET_SVCL_DROP_FLAG = 119,
-		// Un joueur join la game, on send juste le enum state
-		NET_SVCL_FLAG_ENUM = 120,
-		// On change le state du round
-		NET_SVCL_GAME_STATE = 121,
-		// On change le type de game
-		NET_SVCL_CHANGE_GAME_TYPE = 122,
-		// Le server change de map, il le dit aux autres !
-		NET_SVCL_MAP_CHANGE = 123,
+        // Le server accept une new connection, il envoit а tout le monde le ID du joueur
+        NET_SVCL_NEWPLAYER = 101,
+        // Le server envoit ses info aux nouveaux clients
+        // Suivi de зa, il va lui envoyer la liste de tout les joueurs
+        // А partir de ce moment lа, le joueur devra recevoir tout les messages du server
+        // Pour garder l'йtat du server а jour
+        NET_SVCL_SERVER_INFO = 102,
+        // Le server fou le camp, il le dit а tout le monde (en moins quil plante lа)
+        NET_SVCL_SERVER_DISCONNECT = 103,
+        // Le client fou le camp, le server le sait tout suite, et le shoot au autres 
+        // (en moins quil plante lа)
+        NET_SVCL_PLAYER_DISCONNECT = 104,
+        // Le client fou le camp, le server le sait tout suite, et le shoot au autres 
+        // (en moins quil plante lа)
+        NET_SVCL_PLAYER_ENUM_STATE = 105,
+        // Le server envoit un ping а toute les seconde а tout les joueurs
+        NET_SVCL_PING = 106,
+        // Le server envoit а chaque seconde le ping de toute le monde а tout le monde
+        NET_SVCL_PLAYER_PING = 107,
+        // Le server reзois la request de spawner du joueur, et renvoit а TOUT le monde
+        // sa position de spawn
+        NET_SVCL_PLAYER_SPAWN = 108,
+        // Le server modifie une variable sv_, il va l'envoyer а tout le monde
+        // Les sv ce sont les seuls qui affectent le gameplay et que le server garde l'exclusivitйe
+        NET_SVCL_SV_CHANGE = 109,
+        // Un client a tirй, le server a effectuй la collision et renvoi le rйsultat aux autres joueurs
+        NET_SVCL_PLAYER_SHOOT = 110,
+        // Pour dire qu'on supprime un projectile
+        NET_SVCL_DELETE_PROJECTILE = 111,
+        // La position d'un projectile (uniquement controlй par le server)
+        NET_SVCL_PROJECTILE_COORD_FRAME = 112,
+        // Pour spawner une explosion
+        NET_SVCL_EXPLOSION = 113,
+        // Si on a touchй un joueur l'hors d'une explosion par exemple
+        NET_SVCL_PLAYER_HIT = 114,
+        // Le server emet un son et veut que les clients le jou
+        NET_SVCL_PLAY_SOUND = 115,
+        // La version du server
+        NET_SVCL_GAMEVERSION = 116,
+        // Pour synchroniser le temps des horloges du jeu
+        NET_SVCL_SYNCHRONIZE_TIMER = 117,
+        // Pour Changer l'йtat d'un flag
+        NET_SVCL_CHANGE_FLAG_STATE = 118,
+        // Un joueur est mort ou disconnectй, il laisse tomber le flag
+        // Le server communique alors la position exacte aux autres players
+        NET_SVCL_DROP_FLAG = 119,
+        // Un joueur join la game, on send juste le enum state
+        NET_SVCL_FLAG_ENUM = 120,
+        // On change le state du round
+        NET_SVCL_GAME_STATE = 121,
+        // On change le type de game
+        NET_SVCL_CHANGE_GAME_TYPE = 122,
+        // Le server change de map, il le dit aux autres !
+        NET_SVCL_MAP_CHANGE = 123,
         // Un joueur ramasse un item, on le dit а tout le monde
         NET_SVCL_PICKUP_ITEM = 124,
         // Un joueur passe sur une flame, la flame se colle sur lui
@@ -113,14 +113,14 @@ namespace BaboNetwork
         NET_SVCL_MAP_CHUNK = 210,
         NET_SVCL_MAP_LIST = 211,
         NET_CLSV_SVCL_PLAYER_UPDATE_SKIN = 212,
-		//213 sends by pro client as first packet, unknown
+        //213 sends by pro client as first packet, unknown
 
         NET_CLSV_BROADCAST_QUERY = 301,
         NET_CLSV_BROADCAST_GAME_INFO = 302,
         NET_SVCL_HASH_SEED = 404,
         NET_SVCL_HASH_SEED_REPLY = 405,
-		NET_SVCL_CREATE_MINIBOT = 1001,
-		NET_SVCL_MINIBOT_COORD_FRAME = 1002
+        NET_SVCL_CREATE_MINIBOT = 1001,
+        NET_SVCL_MINIBOT_COORD_FRAME = 1002
     };
 
     // Quand le client recois un ping, il renvoit un pong
@@ -151,8 +151,7 @@ namespace BaboNetwork
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public byte[] blueDecal;
 
-        public net_clsv_spawn_request(bool init)
-        {
+        public net_clsv_spawn_request(bool init) {
             playerID = 0;
             weaponID = 0;
             meleeID = 0;
@@ -184,8 +183,7 @@ namespace BaboNetwork
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
         public byte[] password;  // Password
 
-        public net_clsv_gameversion_accepted(bool init)
-        {
+        public net_clsv_gameversion_accepted(bool init) {
             playerID = 0;
             password = new byte[16];
         }
@@ -254,7 +252,7 @@ namespace BaboNetwork
         public byte playerID; // Le ID du joueur
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
         public byte[] playerName; // Le nom du joueur, 31 + \0 caractиres
-        public byte teamID; // Son team
+        public sbyte teamID; // Son team
         public byte status; // Son status
         public short kills;
         public short deaths;
@@ -539,8 +537,7 @@ namespace BaboNetwork
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 20)]
         public byte[] macAddr; // player's mac adress, mouhouha
 
-        public net_clsv_svcl_player_info(bool init)
-        {
+        public net_clsv_svcl_player_info(bool init) {
             playerID = 0;
             playerIP = new byte[16];
             playerName = new byte[32];
@@ -573,7 +570,7 @@ namespace BaboNetwork
     {
         public byte playerID; // Le ID du joueur concernй
         public Int32 frameID; // Le frame auquel зa a йtй envoyй (on en a de besoin pour crйer des belles interpolations)
-                             //	public float angle; // Par oщ il regarde
+                              //	public float angle; // Par oщ il regarde
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public short[] position; // Sa position
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
@@ -601,7 +598,7 @@ namespace BaboNetwork
     {
         public byte playerID; // Le ID du joueur concernй
         public Int32 frameID; // Le frame auquel зa a йtй envoyй (on en a de besoin pour crйer des belles interpolations)
-                             //	public float angle; // Par oщ il regarde
+                              //	public float angle; // Par oщ il regarde
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public short[] position; // Sa position
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
@@ -662,8 +659,7 @@ namespace BaboNetwork
         public byte[] mapName; // 15 + '\0'
         public UInt32 uniqueClientID;
 
-        public net_clsv_map_request(bool init)
-        {
+        public net_clsv_map_request(bool init) {
             mapName = new byte[16];
             uniqueClientID = 0;
         }

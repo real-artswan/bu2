@@ -1,18 +1,20 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 
 public class PingGraph : MonoBehaviour
 {
+    public int dataCount = 60;
     public Color32 drawColor = new Color32(0, 255, 0, 128);
     public int maxValue = 300;
+    public Material material;
 
-    private float yScale = 0;
     private int[] data;
     private int currIndex = 0;
-    private Texture2D texture;
-    private int width, height;
-    private Color32[] drawLine;
-    private Color32 cleanColor;
+    private RectTransform rectTrans;
+
+    void Awake() {
+        rectTrans = GetComponent<RectTransform>();
+        data = new int[dataCount];
+    }
 
     internal void setPing(int ping) {
         if (data == null)
@@ -27,39 +29,41 @@ public class PingGraph : MonoBehaviour
             currIndex++;
     }
 
-    void Start() {
-        //texture to draw on
-        RectTransform rt = GetComponent<RectTransform>();
-        RawImage img = GetComponent<RawImage>();
-        width = (int)rt.rect.width;
-        height = (int)rt.rect.height;
-        texture = new Texture2D(width, height, TextureFormat.ARGB32, false);
-        Material mat = new Material(img.material);
-        mat.mainTexture = texture;
-        img.material = mat;
-
-        data = new int[texture.width];
-        yScale = height / (float)maxValue;
-        drawLine = new Color32[height];
-        cleanColor = img.material.color;
-    }
-
     void Update() {
-        //setPing(UnityEngine.Random.Range(0, 300));
-        drawData();
+        //setPing(UnityEngine.Random.Range(0, 200));
     }
 
-    private void drawData() {
-        for (int i = 0; i < width; i++) {
-            int top = (int)(data[i] * yScale);
-            for (int j = 0; j < top; j++)
-                drawLine[j] = drawColor;
-            for (int j = top; j < height; j++)
-                drawLine[j] = cleanColor;
+    public void drawData() {
+        float yScale = rectTrans.rect.height / maxValue;
+        float xScale = rectTrans.rect.width / dataCount;
+        GL.PopMatrix();
+        {
+            material.SetPass(0);
+            GL.LoadPixelMatrix();
+            Vector3 screenPos = new Vector3(rectTrans.position.x - rectTrans.rect.width / 2f, rectTrans.position.y - rectTrans.rect.height / 2f);
+            Matrix4x4 leftDownCorner = Matrix4x4.TRS(screenPos, Quaternion.identity, Vector3.one);
+            GL.MultMatrix(leftDownCorner);
+            GL.Begin(GL.QUADS);
+            {
+                GL.Color(material.color);
+                GL.Vertex3(0, 0, 0);
+                GL.Vertex3(0, rectTrans.rect.height, 0);
+                GL.Vertex3(rectTrans.rect.width, rectTrans.rect.height, 0);
+                GL.Vertex3(rectTrans.rect.width, 0, 0);
+            }
+            GL.End();
+            GL.Begin(GL.LINES);
+            {
+                GL.Color(drawColor);
+                for (int i = 0; i < rectTrans.rect.width; ++i) {
+                    GL.Vertex3(i * xScale, 0, 0);
+                    GL.Vertex3(i * xScale, data[i] * yScale, 0);
+                }
+            }
+            GL.End();
 
-            texture.SetPixels32(i, 0, 1, drawLine.Length, drawLine);
         }
-        texture.Apply(false);
+        GL.PushMatrix();
     }
 
 }

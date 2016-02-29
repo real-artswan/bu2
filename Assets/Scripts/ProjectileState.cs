@@ -93,7 +93,7 @@ public class ProjectileState
 
         if (stickToPlayer < 255) {
             PlayerState player;
-            if (gameState.players.TryGetValue(stickToPlayer, out player)) {
+            if (gameState.players.tryGetPlayer(stickToPlayer, out player)) {
                 projectileObject.transform.position = player.currentCF.position;
                 return;
             }

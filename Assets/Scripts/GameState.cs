@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Utils;
 
 public class GameState : MonoBehaviour
 {
@@ -23,13 +24,13 @@ public class GameState : MonoBehaviour
     public Minimap minimap;
 
     internal PlayerState thisPlayer;
-    internal Voting voting = new Voting();
-    internal Dictionary<byte, PlayerState> players = new Dictionary<byte, PlayerState>();
-    private List<ProjectileState> projectiles = new List<ProjectileState>();
-    internal BaboFlagsState flagsState = new BaboFlagsState();
+    internal Voting voting;
+    internal PlayersManager players;
+    private List<ProjectileState> projectiles;
+    internal BaboFlagsState flagsState;
 
-    internal List<string> chatMessages = new List<string>();
-    internal List<string> eventMessages = new List<string>();
+    internal List<string> chatMessages;
+    internal List<string> eventMessages;
     //internal bool gotGameState = false;
     internal int mapSeed = 0; //?? what is this
     internal bool needToShutDown = false;
@@ -65,9 +66,7 @@ public class GameState : MonoBehaviour
         _roundState = BaboRoundState.GAME_DONT_SHOW;
         voting.reset();
         flagsState.reset();
-        foreach (PlayerState ps in players.Values) {
-            ps.reset();
-        }
+        players.resetAll();
         /*foreach (Trail trail in trails)
             trail.destroy();
         trails.Clear();*/
@@ -77,7 +76,15 @@ public class GameState : MonoBehaviour
         hud.updateHudElementsVisibility();
     }
 
-    void Start() {
+    void Awake() {
+        voting = new Voting();
+        players = new PlayersManager();
+        projectiles = new List<ProjectileState>();
+        flagsState = new BaboFlagsState();
+
+        chatMessages = new List<string>();
+        eventMessages = new List<string>();
+
         blueFlag = Instantiate(flagModel);
         Renderer r = blueFlag.transform.FindChild("Cloth").GetComponent<Renderer>();
         r.material = new Material(r.material);
@@ -103,7 +110,7 @@ public class GameState : MonoBehaviour
                 break;
             default:
                 PlayerState player;
-                if (players.TryGetValue((byte)state.state, out player))
+                if (players.tryGetPlayer((byte)state.state, out player))
                     flagTransform.position = player.currentCF.position;
                 else {
                     if (Debug.isDebugBuild)
@@ -183,9 +190,7 @@ public class GameState : MonoBehaviour
         //enable main menu
         uiManager.showMainMenu();
         //clean all
-        foreach (PlayerState player in players.Values)
-            player.destroy();
-        players.Clear();
+        players.destroyAll();
         blueFlag.SetActive(false);
         redFlag.SetActive(false);
         reset();
@@ -299,7 +304,7 @@ public class GameState : MonoBehaviour
             case BaboProjectileType.PROJECTILE_GRENADE:
             case BaboProjectileType.PROJECTILE_COCKTAIL_MOLOTOV:
                 PlayerState ps;
-                if (players.TryGetValue(projectile.playerID, out ps))
+                if (players.tryGetPlayer(projectile.playerID, out ps))
                     ps.firedShowDelay = 2;
                 break;
         }

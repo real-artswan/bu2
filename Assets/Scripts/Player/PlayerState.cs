@@ -2,6 +2,17 @@
 
 public class PlayerState : MonoBehaviour
 {
+    public override string ToString() {
+        return string.Format("{0} [id: {1}]", playerName, playerID);
+    }
+
+    public delegate void PlayerTeamChangedEvent(PlayerState player, BaboPlayerTeamID prevTeam);
+    public static event PlayerTeamChangedEvent OnTeamChanged;
+
+    public delegate void PlayerEvent(PlayerState player);
+    public static event PlayerEvent OnPlayerCreated;
+    public static event PlayerEvent OnPlayerDestroyed;
+
     private GlobalServerVariables serverVars;
     private GlobalGameVariables gameVars;
 
@@ -105,18 +116,20 @@ public class PlayerState : MonoBehaviour
     }
 
     internal static PlayerState createSelf(byte playerID, GameObject prefab) {
-        if (Debug.isDebugBuild)
-            Debug.LogFormat("player created {0}", playerID);
         GameObject obj = Instantiate(prefab) as GameObject;
         obj.transform.position = Hidden_Position;
         PlayerState ps = obj.GetComponent<PlayerState>();
         ps.playerID = playerID;
         ps.setWeaponType(ps.getWeaponType());
         ps.setWeapon2Type(ps.getWeapon2Type());
+        if (OnPlayerCreated != null)
+            OnPlayerCreated(ps);
         return ps;
     }
 
     internal void destroy() {
+        if (OnPlayerDestroyed != null)
+            OnPlayerDestroyed(this);
         Destroy(gameObject);
     }
 
@@ -263,12 +276,17 @@ public class PlayerState : MonoBehaviour
     }
 
     internal void setTeamID(BaboPlayerTeamID teamID) {
+        if (teamID == _teamID)
+            return;
+        BaboPlayerTeamID prevTeam = _teamID;
         _teamID = teamID;
-        switch (teamID) {
+        if (OnTeamChanged != null)
+            OnTeamChanged(this, prevTeam);
+        /*switch (teamID) {
             case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
             case BaboPlayerTeamID.PLAYER_TEAM_RED:
                 transform.position = Hidden_Position;
                 break;
-        }
+        }*/
     }
 }

@@ -3,6 +3,7 @@
 public class CameraScript : MonoBehaviour
 {
     public Minimap minimap;
+    public PingGraph pingGraph;
     // Use this for initialization
     void Start() {
 
@@ -16,5 +17,7 @@ public class CameraScript : MonoBehaviour
     void OnPostRender() {
         if (minimap.canDraw())
             minimap.drawLiveMinimap();
+        if (pingGraph.isActiveAndEnabled)
+            pingGraph.drawData();
     }
 }

@@ -74,7 +74,14 @@ public enum BaboWeapon
     WEAPON_MINIBOT_WEAPON = 100
 }
 
-public enum BaboGameType { GAME_TYPE_DM, GAME_TYPE_TDM, GAME_TYPE_CTF, GAME_TYPE_SND };
+public enum BaboGameType
+{
+    NONE = -1,
+    GAME_TYPE_DM,
+    GAME_TYPE_TDM,
+    GAME_TYPE_CTF,
+    GAME_TYPE_SND
+};
 
 public enum BaboRoundState
 {
