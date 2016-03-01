@@ -19,7 +19,7 @@ namespace BaboUI
         private BaboGameType currentGameType = BaboGameType.NONE;
 
         public void updateUI() {
-            roundStatus.text = BaboUtils.getRoundStatus(gameState.getRoundState());
+            roundStatus.text = l10n.getRoundStatus(gameState.getRoundState());
             if (currentGameType == gameState.getGameType())
                 return;
             currentGameType = gameState.getGameType();
@@ -32,7 +32,7 @@ namespace BaboUI
                     blueTable.name = "TableBlue";
                     blueTable.players = gameState.players.blue;
                     blueTable.headerBackground.color = BaboUtils.getTeamColor(BaboPlayerTeamID.PLAYER_TEAM_BLUE);
-                    blueTable.headerText.text = BaboUtils.getTeamName(BaboPlayerTeamID.PLAYER_TEAM_BLUE);
+                    blueTable.headerText.text = l10n.getTeamName(BaboPlayerTeamID.PLAYER_TEAM_BLUE);
                     blueTable.gameType = currentGameType;
                     blueTable.transform.SetParent(tablesContainer);
                     BaboUtils.Log("STATS blue {0}", blueTable.players.Count);
@@ -41,7 +41,7 @@ namespace BaboUI
                     redTable.name = "TableRed";
                     redTable.players = gameState.players.red;
                     redTable.headerBackground.color = BaboUtils.getTeamColor(BaboPlayerTeamID.PLAYER_TEAM_RED);
-                    redTable.headerText.text = BaboUtils.getTeamName(BaboPlayerTeamID.PLAYER_TEAM_RED);
+                    redTable.headerText.text = l10n.getTeamName(BaboPlayerTeamID.PLAYER_TEAM_RED);
                     redTable.gameType = currentGameType;
                     redTable.transform.SetParent(tablesContainer);
                     BaboUtils.Log("STATS red {0}", redTable.players.Count);
@@ -52,7 +52,7 @@ namespace BaboUI
                     bothTable.name = "TableBoth";
                     bothTable.players = gameState.players.both;
                     bothTable.headerBackground.color = BaboUtils.getTeamColor(BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR);
-                    bothTable.headerText.text = BaboUtils.getTeamName(BaboPlayerTeamID.PLAYER_TEAM_AUTO_ASSIGN);
+                    bothTable.headerText.text = l10n.getTeamName(BaboPlayerTeamID.PLAYER_TEAM_AUTO_ASSIGN);
                     bothTable.gameType = currentGameType;
                     bothTable.transform.SetParent(tablesContainer);
                     BaboUtils.Log("STATS both {0}", bothTable.players.Count);
@@ -62,7 +62,7 @@ namespace BaboUI
             specsTable.name = "TableSpecs";
             specsTable.players = gameState.players.specs;
             specsTable.headerBackground.color = BaboUtils.getTeamColor(BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR);
-            specsTable.headerText.text = BaboUtils.getTeamName(BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR);
+            specsTable.headerText.text = l10n.getTeamName(BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR);
             specsTable.gameType = currentGameType;
             specsTable.transform.SetParent(tablesContainer);
             BaboUtils.Log("STATS specs {0}", specsTable.players.Count);

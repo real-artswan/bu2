@@ -1,5 +1,83 @@
 ﻿public static class l10n
 {
+    internal static string getRoundStatus(BaboRoundState baboRoundState) {
+        switch (baboRoundState) {
+            case BaboRoundState.GAME_PLAYING:
+                return gamePlaying;
+            case BaboRoundState.GAME_BLUE_WIN:
+                return string.Format(teamWin, getTeamName(BaboPlayerTeamID.PLAYER_TEAM_BLUE));
+            case BaboRoundState.GAME_RED_WIN:
+                return string.Format(teamWin, getTeamName(BaboPlayerTeamID.PLAYER_TEAM_BLUE)); ;
+            case BaboRoundState.GAME_DRAW:
+                return gameDraw;
+            case BaboRoundState.GAME_MAP_CHANGE:
+                return gameMapChange;
+            case BaboRoundState.GAME_DONT_SHOW:
+                return roundRestarting;
+            default:
+                return "";
+        }
+    }
+
+    public static string getTeamName(BaboPlayerTeamID team) {
+        switch (team) {
+            case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
+                return blueTeam;
+            case BaboPlayerTeamID.PLAYER_TEAM_RED:
+                return redTeam;
+            case BaboPlayerTeamID.PLAYER_TEAM_AUTO_ASSIGN:
+                return freeForAll;
+            default:
+                return specTeam;
+        }
+    }
+
+    public static string getGameTypeName(BaboGameType gameType) {
+        string res = "";
+        switch (gameType) {
+            case BaboGameType.GAME_TYPE_DM:
+                res = deathmatch;
+                break;
+            case BaboGameType.GAME_TYPE_TDM:
+                res = teamDeathmatch;
+                break;
+            case BaboGameType.GAME_TYPE_CTF:
+                res = captureFlag;
+                break;
+            case BaboGameType.GAME_TYPE_SND:
+                res = snd;
+                break;
+        }
+        return res;
+    }
+
+    public static string getGameTypeRules(BaboGameType gameType) {
+        string res = "";
+        switch (gameType) {
+            case BaboGameType.GAME_TYPE_DM:
+                res = dmRules;
+                break;
+            case BaboGameType.GAME_TYPE_TDM:
+                res = tdmRules;
+                break;
+            case BaboGameType.GAME_TYPE_CTF:
+                res = ctfRules;
+                break;
+            case BaboGameType.GAME_TYPE_SND:
+                res = sndRules;
+                break;
+        }
+        return res;
+    }
+    public static string dmRules = "The player with the highest scores wins!";
+    public static string tdmRules = "The team with the highest scores wins!";
+    public static string ctfRules = "Capture the enemy's flag and return it to yours!";
+    public static string sndRules = "";
+
+    public static string deathmatch = "DEATHMATCH";
+    public static string teamDeathmatch = "TEAM DEATHMATCH";
+    public static string captureFlag = "CAPTURE THE FLAG";
+    public static string snd = "SND";
     public static string playerDisconnected = "Player {0} disconnected";
     public static string serverDisconnected = "Server disconnected";
     public static string serverMessage = "Server-> team:{0} dest:{1} msg:{2}";

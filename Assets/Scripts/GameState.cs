@@ -129,15 +129,6 @@ public class GameState : MonoBehaviour
             updateFlagPosition(flagsState[BaboTeamColor.BLUE], blueFlag.transform, map.blueFlagPod.transform.position);
             updateFlagPosition(flagsState[BaboTeamColor.RED], redFlag.transform, map.redFlagPod.transform.position);
         }
-        //draw trails
-        /*int i = 0;
-        while (i < trails.Count) {
-            Trail trail = trails[i];
-            if (trail = null)
-                trails.Remove(trail);
-            else
-                i++;
-        } */
         //draw projectiles
         foreach (ProjectileState projectile in projectiles) {
             projectile.update();
@@ -198,7 +189,8 @@ public class GameState : MonoBehaviour
 
     public void updateMenuInfo() {
         uiManager.gameMenuInfo.text =
-                String.Format(l10n.menuGameInfo, _gameType.ToString(), "Server name", map.mapName, map.authorName, "Rules of this game"); ;
+                String.Format(l10n.menuGameInfo, l10n.getGameTypeName(_gameType),
+                "Server name", map.mapName, map.authorName, l10n.getGameTypeRules(_gameType)); ;
     }
 
     public void thisPlayerAskTeam(BaboPlayerTeamID team) {
