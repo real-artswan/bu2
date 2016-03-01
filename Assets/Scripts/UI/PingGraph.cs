@@ -19,7 +19,6 @@ public class PingGraph : MonoBehaviour
     internal void setPing(int ping) {
         if (data == null)
             return;
-        ping *= 33;
         if (ping > maxValue)
             data[currIndex] = maxValue;
         else

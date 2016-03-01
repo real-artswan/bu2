@@ -727,7 +727,7 @@ namespace BaboNetwork
         private void doPlayerPing(net_svcl_player_ping parsedPacket) {
             PlayerState player;
             if (gameState.players.tryGetPlayer(parsedPacket.playerID, out player)) {
-                player.ping = parsedPacket.ping;
+                player.ping = parsedPacket.ping * 33;
             }
         }
 

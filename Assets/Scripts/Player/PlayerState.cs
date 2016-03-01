@@ -28,7 +28,7 @@ public class PlayerState : MonoBehaviour
     internal byte playerID = 0;
     internal int netID = 0;
     internal string ip = "";
-    internal short ping = 0;
+    internal int ping = 0;
     private BaboPlayerTeamID _teamID = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
     internal BaboPlayerTeamID getTeamID() {
         return _teamID;
