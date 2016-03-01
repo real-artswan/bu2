@@ -159,7 +159,7 @@ public static class BaboUtils
         return r;
     }
 
-    internal static Color getTeamColor(BaboPlayerTeamID teamID, float alpha = 1) {
+    public static Color getTeamColor(BaboPlayerTeamID teamID, float alpha = 1) {
         switch (teamID) {
             case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
                 return new Color(0.3f, 0.3f, 1, alpha);
@@ -170,7 +170,7 @@ public static class BaboUtils
         }
     }
 
-    internal static string getTeamName(BaboPlayerTeamID team) {
+    public static string getTeamName(BaboPlayerTeamID team) {
         switch (team) {
             case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
                 return l10n.blueTeam;
@@ -181,5 +181,44 @@ public static class BaboUtils
             default:
                 return l10n.specTeam;
         }
+    }
+
+    public static void fixScaledMeshUVs(Mesh mesh, Vector3 scale) {
+        float x = scale.x;
+        float z = scale.z;
+        float y = scale.y;
+        Vector2[] newUV = mesh.uv;
+        //Back
+        newUV[0] = new Vector2(0, 0);
+        newUV[1] = new Vector2(x, 0);
+        newUV[2] = new Vector2(0, y);
+        newUV[3] = new Vector2(x, y);
+        //Front
+        newUV[7] = new Vector2(0, 0);
+        newUV[6] = new Vector2(x, 0);
+        newUV[11] = new Vector2(0, y);
+        newUV[10] = new Vector2(x, y);
+        //Left
+        newUV[16] = new Vector2(0, 0);
+        newUV[19] = new Vector2(z, 0);
+        newUV[17] = new Vector2(0, y);
+        newUV[18] = new Vector2(z, y);
+        //Right
+        newUV[20] = new Vector2(0, 0);
+        newUV[23] = new Vector2(z, 0);
+        newUV[21] = new Vector2(0, y);
+        newUV[22] = new Vector2(z, y);
+        //Top
+        newUV[5] = new Vector2(0, 0);
+        newUV[4] = new Vector2(x, 0);
+        newUV[9] = new Vector2(0, z);
+        newUV[8] = new Vector2(x, z);
+        //Bottom
+        newUV[15] = new Vector2(0, 0);
+        newUV[12] = new Vector2(x, 0);
+        newUV[14] = new Vector2(0, z);
+        newUV[13] = new Vector2(x, z);
+        //apply new UV map
+        mesh.uv = newUV;
     }
 }
