@@ -6,14 +6,12 @@ public class PlayerState : MonoBehaviour
         return string.Format("{0} [id: {1}]", playerName, playerID);
     }
 
-    public delegate void PlayerTeamChangedEvent(PlayerState player, BaboPlayerTeamID prevTeam);
-    public static event PlayerTeamChangedEvent OnTeamChanged;
-
     public delegate void PlayerEvent(PlayerState player);
     public static event PlayerEvent OnPlayerCreated;
     public static event PlayerEvent OnPlayerDestroyed;
+    public static event PlayerEvent OnTeamChanged;
 
-    private GlobalServerVariables serverVars;
+    //private GlobalServerVariables serverVars;
     private GlobalGameVariables gameVars;
 
     public BaboBody body;
@@ -21,17 +19,27 @@ public class PlayerState : MonoBehaviour
     public static int MAX_NADES = 3;
     public static int MAX_MOLOTOVS = 1;
 
-    internal GameObject mainWeapon;
-    internal GameObject secondaryWeapon;
-    internal string playerName = "";
+    private GameObject mainWeapon;
+    private GameObject secondaryWeapon;
+    //max len 31
+    public string playerName = "";
 
     internal byte playerID = 0;
     internal int netID = 0;
     internal string ip = "";
     internal int ping = 0;
+
     private BaboPlayerTeamID _teamID = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
-    internal BaboPlayerTeamID getTeamID() {
+    public BaboPlayerTeamID getTeamID() {
         return _teamID;
+    }
+
+    public void setTeamID(BaboPlayerTeamID teamID) {
+        if (teamID == _teamID)
+            return;
+        _teamID = teamID;
+        if (OnTeamChanged != null)
+            OnTeamChanged(this);
     }
 
     private BaboPlayerStatus _status = BaboPlayerStatus.PLAYER_STATUS_DEAD;
@@ -40,9 +48,9 @@ public class PlayerState : MonoBehaviour
         get { return _status; }
         set { _status = value; }
     }
-    internal short kills = 0;
-    internal int deaths = 0;
-    internal int score = 0;
+    public int kills = 0;
+    public int deaths = 0;
+    public int score = 0;
     internal int returns = 0;
     internal int flagAttempts = 0;
     internal int damage = 0;
@@ -75,15 +83,18 @@ public class PlayerState : MonoBehaviour
     internal float firedShowDelay = 0;
 
     private static Vector3 Hidden_Position = new Vector3(0, -10, 0);
-
+    private WeaponsVars weaponsVars;
     void Awake() {
-        if (serverVars == null) {
-            GameObject go = GameObject.Find("GlobalServerVariables");
+        GameObject go = GameObject.FindWithTag("WeaponVars");
+        if (go != null)
+            weaponsVars = go.GetComponent<WeaponsVars>();
+        /*if (serverVars == null) {
+            go = GameObject.Find("GlobalServerVariables");
             if (go != null)
                 serverVars = go.GetComponent<GlobalServerVariables>();
-        }
+        }*/
         if (gameVars == null) {
-            GameObject go = GameObject.Find("GlobalGameVariables");
+            go = GameObject.Find("GlobalGameVariables");
             if (go != null)
                 gameVars = go.GetComponent<GlobalGameVariables>();
         }
@@ -115,7 +126,7 @@ public class PlayerState : MonoBehaviour
         }
     }
 
-    internal static PlayerState createSelf(byte playerID, GameObject prefab) {
+    public static PlayerState createSelf(byte playerID, GameObject prefab) {
         GameObject obj = Instantiate(prefab) as GameObject;
         obj.transform.position = Hidden_Position;
         PlayerState ps = obj.GetComponent<PlayerState>();
@@ -127,7 +138,7 @@ public class PlayerState : MonoBehaviour
         return ps;
     }
 
-    internal void destroy() {
+    public void destroy() {
         if (OnPlayerDestroyed != null)
             OnPlayerDestroyed(this);
         Destroy(gameObject);
@@ -181,7 +192,7 @@ public class PlayerState : MonoBehaviour
     }
 
     internal void reset() {
-        _teamID = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
+        setTeamID(BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR);
         status = BaboPlayerStatus.PLAYER_STATUS_DEAD;
         kills = 0;
         deaths = 0;
@@ -222,7 +233,9 @@ public class PlayerState : MonoBehaviour
         if (currentWeapon == BaboWeapon.WEAPON_NO)
             return;
         //load new weapon data
-        GameObject weaponModel = serverVars.weaponsVars.getWeapon(currentWeapon).prefab;
+        if (weaponsVars == null)
+            return;
+        GameObject weaponModel = weaponsVars.getWeapon(currentWeapon).prefab;
         if (weaponModel == null) {
             if (Debug.isDebugBuild)
                 Debug.LogWarning("Can not load weapon model");
@@ -254,10 +267,12 @@ public class PlayerState : MonoBehaviour
         if (currentWeapon2 == BaboWeapon.WEAPON_NO)
             return;
         //load new weapon data
-        GameObject weaponModel = serverVars.weaponsVars.getWeapon(currentWeapon2).prefab;
+        if (weaponsVars == null)
+            return;
+        GameObject weaponModel = weaponsVars.getWeapon(currentWeapon2).prefab;
         if (weaponModel == null) {
             if (Debug.isDebugBuild)
-                Debug.LogWarning("Can not load weapon model");
+                Debug.LogWarning("Can not load secondary weapon model");
             currentWeapon2 = BaboWeapon.WEAPON_NO;
             return;
         }
@@ -273,20 +288,5 @@ public class PlayerState : MonoBehaviour
     internal void shootSecondary() {
         secondaryWeapon.GetComponent<Animator>().SetTrigger("Play");
         //meleeDelay = 2;
-    }
-
-    internal void setTeamID(BaboPlayerTeamID teamID) {
-        if (teamID == _teamID)
-            return;
-        BaboPlayerTeamID prevTeam = _teamID;
-        _teamID = teamID;
-        if (OnTeamChanged != null)
-            OnTeamChanged(this, prevTeam);
-        /*switch (teamID) {
-            case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
-            case BaboPlayerTeamID.PLAYER_TEAM_RED:
-                transform.position = Hidden_Position;
-                break;
-        }*/
     }
 }

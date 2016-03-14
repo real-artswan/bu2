@@ -125,7 +125,7 @@ public class GameState : MonoBehaviour
             connection.disconnect();
         }
         //flags
-        if ((_gameType == BaboGameType.GAME_TYPE_CTF) && (map.mapCreated)) {
+        if ((getGameType() == BaboGameType.GAME_TYPE_CTF) && (map.mapCreated)) {
             updateFlagPosition(flagsState[BaboTeamColor.BLUE], blueFlag.transform, map.blueFlagPod.transform.position);
             updateFlagPosition(flagsState[BaboTeamColor.RED], redFlag.transform, map.redFlagPod.transform.position);
         }
@@ -189,8 +189,8 @@ public class GameState : MonoBehaviour
 
     public void updateMenuInfo() {
         uiManager.gameMenuInfo.text =
-                String.Format(l10n.menuGameInfo, l10n.getGameTypeName(_gameType),
-                "Server name", map.mapName, map.authorName, l10n.getGameTypeRules(_gameType)); ;
+                String.Format(l10n.menuGameInfo, l10n.getGameTypeName(getGameType()),
+                "Server name", map.mapName, map.authorName, l10n.getGameTypeRules(getGameType())); ;
     }
 
     public void thisPlayerAskTeam(BaboPlayerTeamID team) {
@@ -206,6 +206,20 @@ public class GameState : MonoBehaviour
         updateSpectatorActivity(true);
     }
 
+    internal void setGameType(BaboGameType gameType) {
+        _gameType = gameType;
+        bool flagsVisible = _gameType == BaboGameType.GAME_TYPE_CTF;
+        if (map.blueFlagPod != null)
+            map.blueFlagPod.SetActive(flagsVisible);
+        if (map.redFlagPod != null)
+            map.redFlagPod.SetActive(flagsVisible);
+        blueFlag.SetActive(flagsVisible);
+        redFlag.SetActive(flagsVisible);
+
+        reset();
+        //uiManager.uiStats.updateTablesLayout();
+    }
+
     internal void setRoundState(BaboRoundState newState) {
         if (_roundState == newState)
             return;
@@ -213,6 +227,7 @@ public class GameState : MonoBehaviour
 
         uiManager.lockShowStats(newState != BaboRoundState.GAME_PLAYING);
         updateSpectatorActivity(true);
+        //uiManager.uiStats.updateRoundStat();
     }
 
     public void updateSpectatorActivity(bool allowSpecView) {
@@ -225,19 +240,6 @@ public class GameState : MonoBehaviour
                 (thisPlayer == null) || (thisPlayer.getTeamID() == BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
                 )
             );
-    }
-
-    internal void setGameType(BaboGameType gameType) {
-        _gameType = gameType;
-        bool flagsVisible = _gameType == BaboGameType.GAME_TYPE_CTF;
-        if (map.blueFlagPod != null)
-            map.blueFlagPod.SetActive(flagsVisible);
-        if (map.redFlagPod != null)
-            map.redFlagPod.SetActive(flagsVisible);
-        blueFlag.SetActive(flagsVisible);
-        redFlag.SetActive(flagsVisible);
-
-        reset();
     }
 
     internal void spawnExplosion(Vector3 position, Vector3 normal, float radius) {

@@ -148,8 +148,13 @@ public static class BaboUtils
             case BaboPlayerTeamID.PLAYER_TEAM_RED:
                 return new Color(1, 0, 0, alpha);
             default:
-                return new Color(1, 1, 1);
+                return new Color(1, 1, 1, alpha);
         }
+    }
+
+    public static Color getInverseColor(Color c) {
+        Color invC = new Color(c.a - c.r, c.a - c.g, c.a - c.b);
+        return invC;
     }
 
     public static void fixScaledMeshUVs(Mesh mesh, Vector3 scale) {

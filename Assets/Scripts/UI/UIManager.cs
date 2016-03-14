@@ -1,5 +1,4 @@
-﻿using BaboUI;
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityStandardAssets.CrossPlatformInput;
@@ -9,7 +8,8 @@ public class UIManager : MonoBehaviour
     public GameObject mainMenu;
     public GameObject gameMenu;
     public GameObject HUD;
-    public UIStats uiStats;
+    //public UIStats uiStats;
+    public UiStatsLive uiStats;
     public GlobalGameVariables gameVars;
     public Text gameMenuInfo;
     public NetConnection connection;
