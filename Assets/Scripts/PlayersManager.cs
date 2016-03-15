@@ -4,14 +4,6 @@ using UnityEngine;
 
 public class PlayersManager : MonoBehaviour, IEnumerable<PlayerState>
 {
-    public static PlayersManager findSelf() {
-        GameObject go = GameObject.FindWithTag("PlayersManager");
-        if (go != null)
-            return go.GetComponent<PlayersManager>();
-        else
-            return null;
-    }
-
     public byte getUniqueID() {
         byte id;
         do {

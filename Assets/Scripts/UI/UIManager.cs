@@ -18,11 +18,9 @@ public class UIManager : MonoBehaviour
 
     private bool lockStats = false;
 
-    private PlayersManager playersManager;
     void Start() {
         Cursor.visible = true;
         resumeButton.SetActive(connection.connected);
-        playersManager = PlayersManager.findSelf();
     }
 
     void Update() {
@@ -66,8 +64,8 @@ public class UIManager : MonoBehaviour
         HUD.gameObject.SetActive(true);
         gameMenu.SetActive(true);
         Transform wToggle = null;
-        if (playersManager.thisPlayer != null)
-            mainWeapons.transform.FindChild(playersManager.thisPlayer.getWeaponType().ToString());
+        if (gameState.playersManager.thisPlayer != null)
+            mainWeapons.transform.FindChild(gameState.playersManager.thisPlayer.getWeaponType().ToString());
         if (wToggle != null) {
             wToggle.gameObject.GetComponent<Toggle>().isOn = true;
         }
@@ -91,13 +89,13 @@ public class UIManager : MonoBehaviour
     }
 
     public void setMainWeapon(Toggle sender) {
-        if (sender.isOn && (playersManager.thisPlayer != null))
-            playersManager.thisPlayer.setWeaponType((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
+        if (sender.isOn && (gameState.playersManager.thisPlayer != null))
+            gameState.playersManager.thisPlayer.setWeaponType((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
     }
 
     public void setSecobdaryWeapon(Toggle sender) {
-        if (sender.isOn && (playersManager.thisPlayer != null))
-            playersManager.thisPlayer.setWeapon2Type((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
+        if (sender.isOn && (gameState.playersManager.thisPlayer != null))
+            gameState.playersManager.thisPlayer.setWeapon2Type((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
     }
 
     public void askAssignTeam(Button sender) {

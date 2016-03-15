@@ -18,7 +18,10 @@ public class Minimap : MonoBehaviour
     void Awake() {
         spritesMaterial = new Material(Shader.Find("Sprites/Default"));
         flagHalf = blueFlagTexture.width / 2f;
-        playersManager = PlayersManager.findSelf();
+        GameObject go = GameObject.FindWithTag("PlayersManager");
+        if (go != null)
+            playersManager = go.GetComponent<PlayersManager>();
+
     }
 
     private Vector3 mapCoordToMiniCoord(Vector3 mapPos) {
