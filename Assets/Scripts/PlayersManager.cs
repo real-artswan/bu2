@@ -4,6 +4,14 @@ using UnityEngine;
 
 public class PlayersManager : MonoBehaviour, IEnumerable<PlayerState>
 {
+    public static PlayersManager findSelf() {
+        GameObject go = GameObject.FindWithTag("PlayersManager");
+        if (go != null)
+            return go.GetComponent<PlayersManager>();
+        else
+            return null;
+    }
+
     public byte getUniqueID() {
         byte id;
         do {
@@ -12,6 +20,8 @@ public class PlayersManager : MonoBehaviour, IEnumerable<PlayerState>
         while (players.ContainsKey(id));
         return id;
     }
+
+    internal PlayerState thisPlayer;
 
     internal readonly List<PlayerState> blue = new List<PlayerState>();
     internal readonly List<PlayerState> red = new List<PlayerState>();

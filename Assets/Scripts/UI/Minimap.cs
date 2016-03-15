@@ -3,32 +3,35 @@
 //[RequireComponent(typeof(RawImage))]
 public class Minimap : MonoBehaviour
 {
+    internal BaboFlagsState flagsState;
     public Vector2 margins = new Vector2(10, 10);
-    public GameState gameState;
+    public Map map;
     public Texture2D blueFlagTexture;
     public Texture2D redFlagTexture;
     internal bool canDraw() {
-        return (gameState.map.mapCreated && gameState.hud.gameObject.activeSelf);
+        return (map.mapCreated && this.gameObject.activeSelf);
     }
     private Material spritesMaterial;
     private float flagHalf;
+    private PlayersManager playersManager;
 
     void Awake() {
         spritesMaterial = new Material(Shader.Find("Sprites/Default"));
         flagHalf = blueFlagTexture.width / 2f;
+        playersManager = PlayersManager.findSelf();
     }
 
     private Vector3 mapCoordToMiniCoord(Vector3 mapPos) {
         return (new Vector2(
-            mapPos.x + gameState.map.wShift,
-            mapPos.z + gameState.map.hShift)
-            * gameState.map.minimapScaleFactor) + margins;
+            mapPos.x + map.wShift,
+            mapPos.z + map.hShift)
+            * map.minimapScaleFactor) + margins;
     }
 
     private void drawFlag(Vector3 flagPosition) {
         spritesMaterial.SetPass(0);
         Matrix4x4 mFlagPos = Matrix4x4.TRS(flagPosition, Quaternion.identity,
-            new Vector3(1, 1) / gameState.map.minimapScaleFactor * 1.5f);
+            new Vector3(1, 1) / map.minimapScaleFactor * 1.5f);
         GL.MultMatrix(mFlagPos);
         GL.Begin(GL.QUADS);
         {
@@ -45,7 +48,7 @@ public class Minimap : MonoBehaviour
     }
 
     private void drawFlagPod(Vector3 podPosition, Color c) {
-        Matrix4x4 mFlagPos = Matrix4x4.TRS(podPosition, Quaternion.identity, new Vector3(1, 1) * gameState.map.minimapScaleFactor);
+        Matrix4x4 mFlagPos = Matrix4x4.TRS(podPosition, Quaternion.identity, new Vector3(1, 1) * map.minimapScaleFactor);
         GL.MultMatrix(mFlagPos);
         GL.Begin(GL.QUADS);
         {
@@ -59,15 +62,17 @@ public class Minimap : MonoBehaviour
     }
 
     private void drawDynamicStuff(int width, int height) {
+        if (playersManager == null)
+            return;
         BaboPlayerTeamID myTeam = BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR;
-        if ((gameState.thisPlayer != null) && ((gameState.thisPlayer.getTeamID() == BaboPlayerTeamID.PLAYER_TEAM_BLUE)
-            || (gameState.thisPlayer.getTeamID() == BaboPlayerTeamID.PLAYER_TEAM_RED)))
-            myTeam = gameState.thisPlayer.getTeamID();
+        if ((playersManager.thisPlayer != null) && ((playersManager.thisPlayer.getTeamID() == BaboPlayerTeamID.PLAYER_TEAM_BLUE)
+            || (playersManager.thisPlayer.getTeamID() == BaboPlayerTeamID.PLAYER_TEAM_RED)))
+            myTeam = playersManager.thisPlayer.getTeamID();
         spritesMaterial.mainTexture = null;
         GL.PushMatrix();
         {
             GL.LoadPixelMatrix();
-            gameState.map.minimap.SetPass(0);
+            map.minimapMaterial.SetPass(0);
             GL.Begin(GL.QUADS);
             {
                 GL.TexCoord3(0, 0, 0);
@@ -83,8 +88,8 @@ public class Minimap : MonoBehaviour
 
             spritesMaterial.SetPass(0);
 
-            foreach (PlayerState player in gameState.players) {
-                if ((player == gameState.thisPlayer)
+            foreach (PlayerState player in playersManager) {
+                if ((player == playersManager.thisPlayer)
                     || (player.status != BaboPlayerStatus.PLAYER_STATUS_ALIVE)
                     || ((player.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_BLUE)
                     && (player.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_RED)))
@@ -105,10 +110,10 @@ public class Minimap : MonoBehaviour
                     GL.End();
                 }
             }
-            if ((gameState.thisPlayer != null) && (gameState.thisPlayer.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)) {
-                float enemyMarkerR = gameState.map.minimapScaleFactor / 1.5f;
-                foreach (PlayerState player in gameState.players) {
-                    if ((player == gameState.thisPlayer) || (player.status != BaboPlayerStatus.PLAYER_STATUS_ALIVE) ||
+            if ((playersManager.thisPlayer != null) && (playersManager.thisPlayer.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)) {
+                float enemyMarkerR = map.minimapScaleFactor / 1.5f;
+                foreach (PlayerState player in playersManager) {
+                    if ((player == playersManager.thisPlayer) || (player.status != BaboPlayerStatus.PLAYER_STATUS_ALIVE) ||
                         ((player.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_BLUE) && (player.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_RED)))
                         continue;
 
@@ -130,25 +135,25 @@ public class Minimap : MonoBehaviour
                     }
                 }
             }
-            if (gameState.getGameType() == BaboGameType.GAME_TYPE_CTF) {
+            if (flagsState != null) {
                 //flag pods
-                drawFlagPod(mapCoordToMiniCoord(gameState.map.blueFlagPod.transform.position),
+                drawFlagPod(mapCoordToMiniCoord(map.blueFlagPod.transform.position),
                     BaboUtils.getTeamColor(BaboPlayerTeamID.PLAYER_TEAM_BLUE));
-                drawFlagPod(mapCoordToMiniCoord(gameState.map.redFlagPod.transform.position),
+                drawFlagPod(mapCoordToMiniCoord(map.redFlagPod.transform.position),
                     BaboUtils.getTeamColor(BaboPlayerTeamID.PLAYER_TEAM_RED));
                 //flags
                 spritesMaterial.mainTexture = blueFlagTexture;
-                drawFlag(mapCoordToMiniCoord(gameState.blueFlag.transform.position));
+                drawFlag(mapCoordToMiniCoord(flagsState[BaboTeamColor.BLUE].position));
                 spritesMaterial.mainTexture = redFlagTexture;
-                drawFlag(mapCoordToMiniCoord(gameState.redFlag.transform.position));
+                drawFlag(mapCoordToMiniCoord(flagsState[BaboTeamColor.RED].position));
             }
         }
         GL.PopMatrix();
     }
 
     public void drawLiveMinimap() {
-        int width = gameState.map.minimap.mainTexture.width;
-        int height = gameState.map.minimap.mainTexture.height;
+        int width = map.minimapMaterial.mainTexture.width;
+        int height = map.minimapMaterial.mainTexture.height;
         //GL.Clear(false, true, new Color(1, 1, 1, 0));
         drawDynamicStuff(width, height);
     }

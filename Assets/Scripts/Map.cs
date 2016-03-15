@@ -13,7 +13,7 @@ public class Map : MonoBehaviour
     public GameObject wallModel;
     public Material floorForegroundMaterial;
     public Material floorBackgroundMaterial;
-    public Material minimap;
+    public Material minimapMaterial;
     public Transform wallsParent;
     public Transform spawnsParent;
     public int minimapScaleFactor = 5;
@@ -64,7 +64,7 @@ public class Map : MonoBehaviour
         mapHeight = baboMap.height;
         authorName = baboMap.author_name;
         MapConverter.CreateUnityMap(baboMap, this);
-        MapConverter.createMinimap(baboMap, minimapScaleFactor, minimap);
+        MapConverter.createMinimap(baboMap, minimapScaleFactor, minimapMaterial);
 
         /*byte[] img = ((Texture2D)minimap.mainTexture).EncodeToPNG();
         FileStream fs = File.Open(Path.ChangeExtension(loadMapFromFile, ".png"), FileMode.Create);

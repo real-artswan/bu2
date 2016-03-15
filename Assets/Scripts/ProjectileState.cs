@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ProjectileState
 {
-    internal GameState gameState = null;
+    //internal GameState gameState = null;
 
     internal BaboProjectileType typeID = BaboProjectileType.PROJECTILE_NONE;
     internal byte playerID = 0;
@@ -12,14 +12,14 @@ public class ProjectileState
     internal Int32 uniqueID = -1;
     internal Vector3 position = Vector3.zero;
     internal Vector3 vel = Vector3.zero;
-    internal byte stickToPlayer = 255;
+
+    internal PlayerState stickToPlayer;
 
     private GameObject projectileObject;
 
     private float lifeTime = 0;
 
-    public ProjectileState(GameState gameState, Vector3 position, Vector3 velocity, BaboProjectileType typeID, BaboWeapon weaponID) {
-        this.gameState = gameState;
+    public ProjectileState(WeaponsVars weaponsVars, Vector3 position, Vector3 velocity, BaboProjectileType typeID, BaboWeapon weaponID) {
 
         this.position = position;
         this.typeID = typeID;
@@ -30,7 +30,7 @@ public class ProjectileState
         Vector3 initScale = new Vector3(0.1f, 0.1f, 0.1f);
         GameObject prefab = null;
         if (typeID != BaboProjectileType.PROJECTILE_DROPED_WEAPON)
-            prefab = gameState.serverVars.weaponsVars.getProjectile(typeID).prefab;
+            prefab = weaponsVars.getProjectile(typeID).prefab;
         switch (typeID) {
             case BaboProjectileType.PROJECTILE_ROCKET:
                 lifeTime = 10;
@@ -59,7 +59,7 @@ public class ProjectileState
                 break;
             case BaboProjectileType.PROJECTILE_DROPED_WEAPON:
                 lifeTime = 30;
-                prefab = gameState.serverVars.weaponsVars.getWeapon(weaponID).prefab;
+                prefab = weaponsVars.getWeapon(weaponID).prefab;
                 initScale = new Vector3(0.4f, 0.4f, 0.4f);
                 break;
             default:
@@ -91,13 +91,9 @@ public class ProjectileState
             return;
         }
 
-        if (stickToPlayer < 255) {
-            PlayerState player;
-            if (gameState.players.tryGetPlayer(stickToPlayer, out player)) {
-                projectileObject.transform.position = player.currentCF.position;
-                return;
-            }
-
+        if (stickToPlayer != null) {
+            projectileObject.transform.position = stickToPlayer.currentCF.position;
+            return;
         }
 
         Vector3 newVelocity = vel; //put back new value at the end of method

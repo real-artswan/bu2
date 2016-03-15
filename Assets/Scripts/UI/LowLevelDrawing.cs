@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
-public class CameraScript : MonoBehaviour
+[RequireComponent(typeof(Camera))]
+public class LowLevelDrawing : MonoBehaviour
 {
     public Minimap minimap;
     public PingGraph pingGraph;

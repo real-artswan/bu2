@@ -3,25 +3,21 @@
 public class UiStatsLive : MonoBehaviour
 {
     public int minWidth = 800;
-    public BaboGameType gameType;
-    public PlayersManager players;
-    public Font defaultFont;
+    public GameState gameState;
 
-    public GUIStyle roundStateStyle;
-    public GUIStyle labelStyle;
-    public GUIStyle labelStylePlayerName;
+    public GUIStyle styleRoundState;
+    public GUIStyle styleCell;
+    public GUIStyle styleFirstColumn;
 
     private GUIStyle subHeaderStyle;
     private Color backColor = new Color(0, 0, 0, 0.5f);
-    void Awake() {
-        subHeaderStyle = new GUIStyle(labelStylePlayerName);
-        subHeaderStyle.fixedWidth = 0;
 
+    void Awake() {
+        subHeaderStyle = new GUIStyle(styleFirstColumn);
+        subHeaderStyle.fixedWidth = 0;
     }
 
     void OnGUI() {
-        if (defaultFont != null)
-            GUI.skin.font = defaultFont;
         //GUI.skin.font.material.color = Color.white;
         float contentWidth = Mathf.Max(minWidth, Screen.width / 2f);
         float contentLeft = Screen.width / 2f - contentWidth / 2f;
@@ -36,10 +32,10 @@ public class UiStatsLive : MonoBehaviour
         GUI.contentColor = BaboUtils.getInverseColor(GUI.backgroundColor);
         //GUI.contentColor = Color.white;
         //GUILayout.Box(new GUIContent(l10n.getRoundStatus(gameState.getRoundState())), roundStateStyle);
-        GUILayout.Box(new GUIContent(l10n.getRoundStatus(BaboRoundState.GAME_PLAYING)), roundStateStyle);
+        GUILayout.Box(new GUIContent(l10n.getRoundStatus(gameState.getRoundState())), styleRoundState);
         //GUILayout.Space(spacing);
         drawHeader();
-        switch (gameType) {
+        switch (gameState.getGameType()) {
             case BaboGameType.GAME_TYPE_CTF:
             case BaboGameType.GAME_TYPE_TDM:
                 GUI.backgroundColor = BaboUtils.getTeamColor(BaboPlayerTeamID.PLAYER_TEAM_RED);
@@ -47,8 +43,8 @@ public class UiStatsLive : MonoBehaviour
                 drawSubHeader(l10n.redTeam);
                 GUI.backgroundColor = backColor;
                 GUI.contentColor = Color.white;
-                players.red.Sort(Comparison);
-                foreach (PlayerState player in players.red) {
+                gameState.playersManager.red.Sort(Comparison);
+                foreach (PlayerState player in gameState.playersManager.red) {
                     drawRow(player);
                 }
                 GUI.backgroundColor = BaboUtils.getTeamColor(BaboPlayerTeamID.PLAYER_TEAM_BLUE);
@@ -56,8 +52,8 @@ public class UiStatsLive : MonoBehaviour
                 drawSubHeader(l10n.blueTeam);
                 GUI.backgroundColor = backColor;
                 GUI.contentColor = Color.white;
-                players.blue.Sort(Comparison);
-                foreach (PlayerState player in players.blue) {
+                gameState.playersManager.blue.Sort(Comparison);
+                foreach (PlayerState player in gameState.playersManager.blue) {
                     drawRow(player);
                 }
                 break;
@@ -67,8 +63,8 @@ public class UiStatsLive : MonoBehaviour
                 drawSubHeader(l10n.freeForAll);
                 GUI.backgroundColor = backColor;
                 GUI.contentColor = Color.white;
-                players.both.Sort(Comparison);
-                foreach (PlayerState player in players.both) {
+                gameState.playersManager.both.Sort(Comparison);
+                foreach (PlayerState player in gameState.playersManager.both) {
                     drawRow(player);
                 }
                 break;
@@ -79,8 +75,8 @@ public class UiStatsLive : MonoBehaviour
         drawSubHeader(l10n.specTeam);
         GUI.backgroundColor = backColor;
         GUI.contentColor = Color.white;
-        players.specs.Sort(Comparison);
-        foreach (PlayerState player in players.specs) {
+        gameState.playersManager.specs.Sort(Comparison);
+        foreach (PlayerState player in gameState.playersManager.specs) {
             drawRow(player);
         }
         GUI.backgroundColor = Color.black;
@@ -102,24 +98,24 @@ public class UiStatsLive : MonoBehaviour
 
     void drawRow(PlayerState player) {
         GUILayout.BeginHorizontal();
-        GUILayout.Label(player.playerName, labelStylePlayerName);
-        GUILayout.Label(player.kills.ToString(), labelStyle);
-        GUILayout.Label(player.deaths.ToString(), labelStyle);
-        GUILayout.Label(player.damage.ToString(), labelStyle);
-        GUILayout.Label(player.returns.ToString(), labelStyle);
-        GUILayout.Label(player.score.ToString(), labelStyle);
-        GUILayout.Label(player.ping.ToString(), labelStyle);
+        GUILayout.Label(player.playerName, styleFirstColumn);
+        GUILayout.Label(player.kills.ToString(), styleCell);
+        GUILayout.Label(player.deaths.ToString(), styleCell);
+        GUILayout.Label(player.damage.ToString(), styleCell);
+        GUILayout.Label(player.returns.ToString(), styleCell);
+        GUILayout.Label(player.score.ToString(), styleCell);
+        GUILayout.Label(player.ping.ToString(), styleCell);
         GUILayout.EndHorizontal();
     }
     void drawHeader() {
         GUILayout.BeginHorizontal();
-        GUILayout.Label(l10n.playerName, labelStylePlayerName);
-        GUILayout.Label(l10n.kills, labelStyle);
-        GUILayout.Label(l10n.death, labelStyle);
-        GUILayout.Label(l10n.damage, labelStyle);
-        GUILayout.Label(l10n.retrns, labelStyle);
-        GUILayout.Label(l10n.caps, labelStyle);
-        GUILayout.Label(l10n.ping, labelStyle);
+        GUILayout.Label(l10n.playerName, styleFirstColumn);
+        GUILayout.Label(l10n.kills, styleCell);
+        GUILayout.Label(l10n.death, styleCell);
+        GUILayout.Label(l10n.damage, styleCell);
+        GUILayout.Label(l10n.retrns, styleCell);
+        GUILayout.Label(l10n.caps, styleCell);
+        GUILayout.Label(l10n.ping, styleCell);
         GUILayout.EndHorizontal();
     }
 

@@ -17,6 +17,13 @@ public class CanvasHUD : MonoBehaviour
     public Slider heatWpn;
     public GameObject fpsCounter;
     public PingGraph pingGraph;
+    public Minimap minimap;
+
+    private PlayersManager playersManager;
+
+    void Awake() {
+        playersManager = PlayersManager.findSelf();
+    }
 
     private void setFlagsActive(bool active) {
         blueTeamScore.gameObject.transform.parent.parent.gameObject.SetActive(active);
@@ -33,8 +40,8 @@ public class CanvasHUD : MonoBehaviour
         switch (gameState.getGameType()) {
             case BaboGameType.GAME_TYPE_DM:
                 topCounter.gameObject.SetActive(
-                    (gameState.thisPlayer != null) &&
-                    (gameState.thisPlayer.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR));
+                    (playersManager.thisPlayer != null) &&
+                    (playersManager.thisPlayer.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR));
                 setFlagsActive(false);
                 break;
             case BaboGameType.GAME_TYPE_TDM:
@@ -44,11 +51,11 @@ public class CanvasHUD : MonoBehaviour
                 setFlagsActive(true);
                 break;
         }
-        if ((gameState.thisPlayer != null) && (gameState.thisPlayer.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)) {
+        if ((playersManager.thisPlayer != null) && (playersManager.thisPlayer.getTeamID() != BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)) {
             nades.gameObject.transform.parent.gameObject.SetActive(true);
             molotovs.gameObject.transform.parent.gameObject.SetActive(true);
             health.gameObject.SetActive(true);
-            heatWpn.gameObject.SetActive(gameState.thisPlayer.getWeaponType() == BaboWeapon.WEAPON_CHAIN_GUN);
+            heatWpn.gameObject.SetActive(playersManager.thisPlayer.getWeaponType() == BaboWeapon.WEAPON_CHAIN_GUN);
         }
         else {
             nades.gameObject.transform.parent.gameObject.SetActive(false);

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Utils;
 
 public class GameState : MonoBehaviour
 {
@@ -19,13 +18,10 @@ public class GameState : MonoBehaviour
     public GlobalGameVariables gameVars;
     public GlobalServerVariables serverVars;
     public UIManager uiManager;
-    public CanvasHUD hud;
     public Map map;
-    public Minimap minimap;
 
-    internal PlayerState thisPlayer;
     internal Voting voting;
-    internal PlayersManager players;
+    public PlayersManager playersManager;
     private List<ProjectileState> projectiles;
     internal BaboFlagsState flagsState;
 
@@ -66,19 +62,18 @@ public class GameState : MonoBehaviour
         _roundState = BaboRoundState.GAME_DONT_SHOW;
         voting.reset();
         flagsState.reset();
-        players.resetAll();
+        playersManager.resetAll();
         /*foreach (Trail trail in trails)
             trail.destroy();
         trails.Clear();*/
         foreach (ProjectileState projectile in projectiles)
             projectile.destroy();
         projectiles.Clear();
-        hud.updateHudElementsVisibility();
+        uiManager.HUD.updateHudElementsVisibility();
     }
 
     void Awake() {
         voting = new Voting();
-        players = new PlayersManager();
         projectiles = new List<ProjectileState>();
         flagsState = new BaboFlagsState();
 
@@ -110,7 +105,7 @@ public class GameState : MonoBehaviour
                 break;
             default:
                 PlayerState player;
-                if (players.tryGetPlayer((byte)state.state, out player))
+                if (playersManager.tryGetPlayer((byte)state.state, out player))
                     flagTransform.position = player.currentCF.position;
                 else {
                     if (Debug.isDebugBuild)
@@ -118,6 +113,7 @@ public class GameState : MonoBehaviour
                 }
                 break;
         }
+        state.position = flagTransform.position;
     }
 
     void Update() {
@@ -134,18 +130,22 @@ public class GameState : MonoBehaviour
             projectile.update();
         }
         //update UI
-        if (hud.gameObject.activeSelf) {
+        if (uiManager.HUD.gameObject.activeSelf) {
             //hud
-            if ((gameVars.showPing) && (thisPlayer != null)) {
-                hud.pingGraph.setPing(thisPlayer.ping);
-                hud.health.value = thisPlayer.life * 100;
-                hud.nades.text = thisPlayer.nades.ToString();
-                hud.molotovs.text = thisPlayer.molotovs.ToString();
+            if (getGameType() == BaboGameType.GAME_TYPE_CTF)
+                uiManager.HUD.minimap.flagsState = flagsState;
+            else
+                uiManager.HUD.minimap.flagsState = null;
+            if ((gameVars.showPing) && (playersManager.thisPlayer != null)) {
+                uiManager.HUD.pingGraph.setPing(playersManager.thisPlayer.ping);
+                uiManager.HUD.health.value = playersManager.thisPlayer.life * 100;
+                uiManager.HUD.nades.text = playersManager.thisPlayer.nades.ToString();
+                uiManager.HUD.molotovs.text = playersManager.thisPlayer.molotovs.ToString();
             }
             int gtl = (int)gameTimeLeft + 1;
             int rtl = (int)roundTimeLeft + 1;
-            hud.gameTimer.text = String.Format("{0:d2}:{1:d2}", gtl / 60, gtl % 60);
-            hud.roundTimer.text = String.Format("{0:d2}:{1:d2}", rtl / 60, rtl % 60);
+            uiManager.HUD.gameTimer.text = String.Format("{0:d2}:{1:d2}", gtl / 60, gtl % 60);
+            uiManager.HUD.roundTimer.text = String.Format("{0:d2}:{1:d2}", rtl / 60, rtl % 60);
             int max_score = 0;
             switch (getGameType()) {
                 case BaboGameType.GAME_TYPE_CTF:
@@ -156,8 +156,8 @@ public class GameState : MonoBehaviour
                     break;
             }
             if (max_score > 0) {
-                hud.blueTeamScore.text = String.Format("{0}/{1}", blueTeamScore, max_score);
-                hud.redTeamScore.text = String.Format("{0}/{1}", redTeamScore, max_score);
+                uiManager.HUD.blueTeamScore.text = String.Format("{0}/{1}", blueTeamScore, max_score);
+                uiManager.HUD.redTeamScore.text = String.Format("{0}/{1}", redTeamScore, max_score);
             }
         }
     }
@@ -167,7 +167,7 @@ public class GameState : MonoBehaviour
         gameObject.SetActive(true);
 
         uiManager.showGameMenu();
-        hud.gameObject.SetActive(true);
+        uiManager.HUD.gameObject.SetActive(true);
         needToShutDown = false;
     }
 
@@ -181,7 +181,7 @@ public class GameState : MonoBehaviour
         //enable main menu
         uiManager.showMainMenu();
         //clean all
-        players.destroyAll();
+        playersManager.destroyAll();
         blueFlag.SetActive(false);
         redFlag.SetActive(false);
         reset();
@@ -194,10 +194,10 @@ public class GameState : MonoBehaviour
     }
 
     public void thisPlayerAskTeam(BaboPlayerTeamID team) {
-        if ((thisPlayer == null) || (thisPlayer.getTeamID() == team))
+        if ((playersManager.thisPlayer == null) || (playersManager.thisPlayer.getTeamID() == team))
             return;
         net_clsv_svcl_team_request teamRequest;
-        teamRequest.playerID = thisPlayer.playerID;
+        teamRequest.playerID = playersManager.thisPlayer.playerID;
         teamRequest.teamRequested = (sbyte)team;
         connection.packetsToSend.Enqueue(new BaboRawPacket(teamRequest));
     }
@@ -237,7 +237,7 @@ public class GameState : MonoBehaviour
         }
         spectator.SetActive(
             (getRoundState() == BaboRoundState.GAME_PLAYING) && (
-                (thisPlayer == null) || (thisPlayer.getTeamID() == BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
+                (playersManager.thisPlayer == null) || (playersManager.thisPlayer.getTeamID() == BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR)
                 )
             );
     }
@@ -298,7 +298,7 @@ public class GameState : MonoBehaviour
             case BaboProjectileType.PROJECTILE_GRENADE:
             case BaboProjectileType.PROJECTILE_COCKTAIL_MOLOTOV:
                 PlayerState ps;
-                if (players.tryGetPlayer(projectile.playerID, out ps))
+                if (playersManager.tryGetPlayer(projectile.playerID, out ps))
                     ps.firedShowDelay = 2;
                 break;
         }
@@ -318,6 +318,9 @@ public class GameState : MonoBehaviour
         if (projectileID >= projectiles.Count)
             return;
         //ok, lets pray it is right projectile
-        projectiles[projectileID].stickToPlayer = playerID;
+        PlayerState player;
+        if (!playersManager.tryGetPlayer(playerID, out player))
+            return;
+        projectiles[projectileID].stickToPlayer = player;
     }
 }

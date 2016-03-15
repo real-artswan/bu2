@@ -7,8 +7,7 @@ public class UIManager : MonoBehaviour
 {
     public GameObject mainMenu;
     public GameObject gameMenu;
-    public GameObject HUD;
-    //public UIStats uiStats;
+    public CanvasHUD HUD;
     public UiStatsLive uiStats;
     public GlobalGameVariables gameVars;
     public Text gameMenuInfo;
@@ -19,9 +18,11 @@ public class UIManager : MonoBehaviour
 
     private bool lockStats = false;
 
+    private PlayersManager playersManager;
     void Start() {
         Cursor.visible = true;
         resumeButton.SetActive(connection.connected);
+        playersManager = PlayersManager.findSelf();
     }
 
     void Update() {
@@ -54,7 +55,7 @@ public class UIManager : MonoBehaviour
 
     public void showMainMenu() {
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
-        HUD.SetActive(false);
+        HUD.gameObject.SetActive(false);
         gameMenu.SetActive(false);
         mainMenu.SetActive(true);
         resumeButton.SetActive(connection.connected);
@@ -62,11 +63,11 @@ public class UIManager : MonoBehaviour
     }
     public void showGameMenu() {
         Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
-        HUD.SetActive(true);
+        HUD.gameObject.SetActive(true);
         gameMenu.SetActive(true);
         Transform wToggle = null;
-        if (gameState.thisPlayer != null)
-            mainWeapons.transform.FindChild(gameState.thisPlayer.getWeaponType().ToString());
+        if (playersManager.thisPlayer != null)
+            mainWeapons.transform.FindChild(playersManager.thisPlayer.getWeaponType().ToString());
         if (wToggle != null) {
             wToggle.gameObject.GetComponent<Toggle>().isOn = true;
         }
@@ -78,7 +79,7 @@ public class UIManager : MonoBehaviour
     public void hideMenus() {
         Texture2D cur = gameVars.cursorTarget;
         Cursor.SetCursor(cur, new Vector2(cur.width / 2, cur.height / 2), CursorMode.Auto);
-        HUD.SetActive(true);
+        HUD.gameObject.SetActive(true);
         gameMenu.SetActive(false);
         mainMenu.SetActive(false);
 
@@ -90,13 +91,13 @@ public class UIManager : MonoBehaviour
     }
 
     public void setMainWeapon(Toggle sender) {
-        if (sender.isOn && (gameState.thisPlayer != null))
-            gameState.thisPlayer.setWeaponType((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
+        if (sender.isOn && (playersManager.thisPlayer != null))
+            playersManager.thisPlayer.setWeaponType((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
     }
 
     public void setSecobdaryWeapon(Toggle sender) {
-        if (sender.isOn && (gameState.thisPlayer != null))
-            gameState.thisPlayer.setWeapon2Type((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
+        if (sender.isOn && (playersManager.thisPlayer != null))
+            playersManager.thisPlayer.setWeapon2Type((BaboWeapon)Enum.Parse(typeof(BaboWeapon), sender.name));
     }
 
     public void askAssignTeam(Button sender) {
