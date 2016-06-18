@@ -14,8 +14,8 @@ public class PlayerStateEditor
             if (GUILayout.Button("Destroy")) {
                 state.destroy();
             }
-            state.kills = (short)EditorGUILayout.IntField(state.kills);
-            state.score = (short)EditorGUILayout.IntField(state.score);
+            state.playerStatistic.kills = (short)EditorGUILayout.IntField(state.playerStatistic.kills);
+            state.playerStatistic.score = (short)EditorGUILayout.IntField(state.playerStatistic.score);
             state.setTeamID((BaboPlayerTeamID)EditorGUILayout.EnumMaskField(state.getTeamID()));
         }
     }

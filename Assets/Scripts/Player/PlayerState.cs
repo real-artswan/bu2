@@ -1,7 +1,19 @@
 ﻿using UnityEngine;
 
+public class PlayerStatistic
+{
+    public int kills = 0;
+    public int deaths = 0;
+    public int damage = 0;
+    public int score = 0;
+    public int returns = 0;
+    public int flagAttempts = 0;
+    public float timePlayedCurGame = 0;
+}
+
 public class PlayerState : MonoBehaviour
 {
+    public PlayerStatistic playerStatistic = new PlayerStatistic();
     public override string ToString() {
         return string.Format("{0} [id: {1}]", playerName, playerID);
     }
@@ -48,15 +60,17 @@ public class PlayerState : MonoBehaviour
         get { return _status; }
         set { _status = value; }
     }
-    public int kills = 0;
-    public int deaths = 0;
-    public int score = 0;
-    internal int returns = 0;
-    internal int flagAttempts = 0;
-    internal int damage = 0;
+
     internal float dmg = 0;
-    internal float timePlayedCurGame = 0;
-    internal float life { get { return _life; } set { _life = value; if (value > 1) _life = 1; } }
+    internal float life
+    {
+        get { return _life; }
+        set {
+            _life = value;
+            if (value > 1) _life = 1;
+            if (value <= 0) status = BaboPlayerStatus.PLAYER_STATUS_DEAD;
+        }
+    }
     internal int nades { get { return _nades; } set { _nades = value; if (_nades > MAX_NADES) _nades = MAX_NADES; } }
     internal int molotovs { get { return _molotovs; } set { _molotovs = value; if (_molotovs > MAX_MOLOTOVS) _molotovs = MAX_MOLOTOVS; } }
 
@@ -180,28 +194,11 @@ public class PlayerState : MonoBehaviour
         this.camPosZ = camPosZ;
     }
 
-    internal void hit(BaboWeapon fromWeapon, PlayerState fromHit, float damage) {
-        BaboUtils.Log("{0} hit by {1}, {2}, damage {3}. Health: {4}", playerID, fromHit.playerID, fromWeapon.ToString(), damage, _life);
-        gameVars.bloodMarkPrefab.createBloodMark(transform.position, _life - damage, gameVars.bloodMaterials, gameVars.terrainMarksLifeTime);
-        _life = damage;
-
-        if (_life < 0) {
-            status = BaboPlayerStatus.PLAYER_STATUS_DEAD;
-            gameVars.bloodMarkPrefab.createBloodMark(transform.position, 1, gameVars.bloodMaterials, gameVars.terrainMarksLifeTime);
-        }
-    }
-
     internal void reset() {
         setTeamID(BaboPlayerTeamID.PLAYER_TEAM_SPECTATOR);
         status = BaboPlayerStatus.PLAYER_STATUS_DEAD;
-        kills = 0;
-        deaths = 0;
-        score = 0;
-        returns = 0;
-        flagAttempts = 0;
-        damage = 0;
+        playerStatistic = new PlayerStatistic();
         dmg = 0;
-        timePlayedCurGame = 0;
         _life = 1f;
         _nades = MAX_NADES;
         _molotovs = MAX_MOLOTOVS;

@@ -5,11 +5,12 @@ using UnityEngine;
 
 public class GameState : MonoBehaviour
 {
+    public DynamicDirt dirtManager;
     public GameObject spectator;
     public GameObject flagModel;
     public GameObject baboModel;
-    public ParticleSystem explosionModel;
-    public ParticleSystem flameFlowPrefab;
+    public FlameExplosion explosionModel;
+    public FlamethrowerFlame flamethrowerFlamePrefab;
     public ParticleSystem shootFirePrefab;
     public ParticleSystem stopSmokePrefab;
     public Trail bulletTrailPrefab;
@@ -245,10 +246,10 @@ public class GameState : MonoBehaviour
     internal void spawnExplosion(Vector3 position, Vector3 normal, float radius) {
         //if (Debug.isDebugBuild)
         //Debug.LogFormat("Explosion at {0}, normal {1}, radius {2}", position.ToString(), normal.ToString(), radius);
-        ParticleSystem expl = Instantiate(explosionModel, position, Quaternion.LookRotation(normal)) as ParticleSystem;
-        expl.transform.localScale = expl.transform.localScale * radius;
-        expl.Play();
-        gameVars.explosionMarkPrefab.createExplosionMark(position, radius, gameVars.terrainMarksLifeTime);
+        FlameExplosion expl = Instantiate(explosionModel, position, Quaternion.LookRotation(normal)) as FlameExplosion;
+        expl.setRadius(radius);
+        expl.play();
+        dirtManager.createExplosionMark(position, radius);
     }
 
     internal void spawnImpact(Vector3 position1, Vector3 position2, BaboWeapon shootWeapon, BaboPlayerTeamID teamID, byte nuzzleID) {
@@ -263,10 +264,10 @@ public class GameState : MonoBehaviour
         switch (shootWeapon) {
             case BaboWeapon.WEAPON_FLAME_THROWER:
                 //spawn fire
-                ParticleSystem flame = Instantiate(flameFlowPrefab, position1, Quaternion.identity) as ParticleSystem;
+                FlamethrowerFlame flame = Instantiate(flamethrowerFlamePrefab, position1, Quaternion.identity) as FlamethrowerFlame;
                 flame.gameObject.transform.LookAt(position2);
-                flame.startLifetime = (position2 - position1).magnitude / 10;
-                flame.Play();
+                flame.setLength((position2 - position1).magnitude);
+                flame.play();
                 return;
             case BaboWeapon.WEAPON_PHOTON_RIFLE:
                 dmg = 2.0f;
@@ -291,7 +292,7 @@ public class GameState : MonoBehaviour
         }
     }
 
-    internal void AddProjectile(ProjectileState projectile) {
+    internal void addProjectile(ProjectileState projectile) {
         switch (projectile.typeID) {
             case BaboProjectileType.PROJECTILE_DIRECT:
             case BaboProjectileType.PROJECTILE_ROCKET:
@@ -305,7 +306,7 @@ public class GameState : MonoBehaviour
         projectiles.Add(projectile);
     }
 
-    internal void DeleteProjectile(int projectileID) {
+    internal void deleteProjectile(int projectileID) {
         ProjectileState ps = projectiles.Find(p => p.uniqueID == projectileID);
         if (ps == null)
             return;
@@ -313,7 +314,7 @@ public class GameState : MonoBehaviour
         ps.destroy();
     }
 
-    internal void StickProjectile(short projectileID, byte playerID) {
+    internal void stickProjectile(short projectileID, byte playerID) {
         //projectileID here is not ID but index in list of projectiles (omg)
         if (projectileID >= projectiles.Count)
             return;

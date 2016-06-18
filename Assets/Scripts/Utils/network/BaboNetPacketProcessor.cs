@@ -250,7 +250,11 @@ namespace BaboNetwork
                         break;
                 }
             }
-            pHit.hit((BaboWeapon)playerHit.weaponID, pFromHit, playerHit.damage);
+            float dDamage = pHit.life - playerHit.damage;
+            pHit.life = playerHit.damage;
+            if (pHit.status == BaboPlayerStatus.PLAYER_STATUS_DEAD)
+                dDamage = 1; //show more blood if this hit is fatal
+            gameState.dirtManager.createBloodMarks(pHit.transform.position, dDamage);
         }
 
         private void doPlayerShootMelee(net_clsv_svcl_player_shoot_melee parsedPacket) {
@@ -303,7 +307,7 @@ namespace BaboNetwork
             projectile.nuzzleID = parsedPacket.nuzzleID;
             projectile.playerID = parsedPacket.playerID;
             projectile.uniqueID = parsedPacket.uniqueID;
-            gameState.AddProjectile(projectile);
+            gameState.addProjectile(projectile);
 
             /*if (Debug.isDebugBuild)
                 Debug.LogFormat("Projectile {0} id: {1} pos: {2} vel: {3}", projectile.typeID.ToString(),
@@ -323,11 +327,11 @@ namespace BaboNetwork
 		}*/
 
         private void doDeleteProjectile(net_svcl_delete_projectile parsedPacket) {
-            gameState.DeleteProjectile(parsedPacket.projectileID);
+            gameState.deleteProjectile(parsedPacket.projectileID);
         }
 
         private void doFlameStickToPlayer(net_svcl_flame_stick_to_player parsedPacket) {
-            gameState.StickProjectile(parsedPacket.projectileID, parsedPacket.playerID);
+            gameState.stickProjectile(parsedPacket.projectileID, parsedPacket.playerID);
         }
 
         private void doPickupItem(net_svcl_pickup_item parsedPacket) {
@@ -485,12 +489,12 @@ namespace BaboNetwork
             PlayerState ps;
             if (!gameState.playersManager.tryGetPlayer(playerStats.playerID, out ps))
                 return;
-            ps.kills = playerStats.kills;
-            ps.deaths = playerStats.deaths;
-            ps.score = playerStats.score;
-            ps.returns = playerStats.returns;
-            ps.flagAttempts = playerStats.flagAttempts;
-            ps.timePlayedCurGame = playerStats.timePlayedCurGame;
+            ps.playerStatistic.kills = playerStats.kills;
+            ps.playerStatistic.deaths = playerStats.deaths;
+            ps.playerStatistic.score = playerStats.score;
+            ps.playerStatistic.returns = playerStats.returns;
+            ps.playerStatistic.flagAttempts = playerStats.flagAttempts;
+            ps.playerStatistic.timePlayedCurGame = playerStats.timePlayedCurGame;
         }
 
         private void doNewPlayer(net_svcl_newplayer parsedPacket) {
@@ -537,12 +541,12 @@ namespace BaboNetwork
             ps.netID = playerEnum.babonetID;
             ps.playerName = BaboUtils.baboBytesToString(playerEnum.playerName, true);
             ps.ip = BaboUtils.baboBytesToString(playerEnum.playerIP, false);
-            ps.kills = playerEnum.kills;
-            ps.deaths = (int)playerEnum.deaths;
-            ps.score = (int)playerEnum.score;
-            ps.returns = (int)playerEnum.returns;
-            ps.flagAttempts = (int)playerEnum.flagAttempts;
-            ps.damage = (int)playerEnum.damage;
+            ps.playerStatistic.kills = playerEnum.kills;
+            ps.playerStatistic.deaths = (int)playerEnum.deaths;
+            ps.playerStatistic.score = (int)playerEnum.score;
+            ps.playerStatistic.returns = (int)playerEnum.returns;
+            ps.playerStatistic.flagAttempts = (int)playerEnum.flagAttempts;
+            ps.playerStatistic.damage = (int)playerEnum.damage;
             ps.status = (BaboPlayerStatus)playerEnum.status;
             ps.setTeamID((BaboPlayerTeamID)playerEnum.teamID);
             ps.setWeaponType((BaboWeapon)playerEnum.weaponID);
@@ -650,14 +654,14 @@ namespace BaboNetwork
                     break;
                 case FlagStateID.ON_POD:
                     if (flagState.flagID == (byte)ps.getTeamID()) {
-                        ps.returns++;
+                        ps.playerStatistic.returns++;
                         if ((BaboPlayerTeamID)flagState.flagID == BaboPlayerTeamID.PLAYER_TEAM_RED)
                             eventMsg = string.Format(l10n.playerReturnedFlag, ps.playerName, l10n.red);
                         else
                             eventMsg = string.Format(l10n.playerReturnedFlag, ps.playerName, l10n.blue);
                     }
                     else {
-                        ps.score++;
+                        ps.playerStatistic.score++;
                         switch (ps.getTeamID()) {
                             case BaboPlayerTeamID.PLAYER_TEAM_BLUE:
                                 gameState.blueTeamScore++;
@@ -674,7 +678,7 @@ namespace BaboNetwork
                     }
                     break;
                 default:
-                    ps.flagAttempts++;
+                    ps.playerStatistic.flagAttempts++;
                     if ((BaboPlayerTeamID)flagState.flagID == BaboPlayerTeamID.PLAYER_TEAM_RED)
                         eventMsg = string.Format(l10n.playerTookFlag, ps.playerName, l10n.red);
                     else

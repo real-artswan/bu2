@@ -88,9 +88,9 @@ public class UiStatsLive : MonoBehaviour
     }
 
     private int Comparison(PlayerState x, PlayerState y) {
-        int res = y.kills - x.kills;
+        int res = y.playerStatistic.kills - x.playerStatistic.kills;
         if (res == 0)
-            res = y.damage - x.damage;
+            res = y.playerStatistic.damage - x.playerStatistic.damage;
         if (res == 0)
             res = y.playerID - x.playerID;
         return res;
@@ -99,11 +99,11 @@ public class UiStatsLive : MonoBehaviour
     void drawRow(PlayerState player) {
         GUILayout.BeginHorizontal();
         GUILayout.Label(player.playerName, styleFirstColumn);
-        GUILayout.Label(player.kills.ToString(), styleCell);
-        GUILayout.Label(player.deaths.ToString(), styleCell);
-        GUILayout.Label(player.damage.ToString(), styleCell);
-        GUILayout.Label(player.returns.ToString(), styleCell);
-        GUILayout.Label(player.score.ToString(), styleCell);
+        GUILayout.Label(player.playerStatistic.kills.ToString(), styleCell);
+        GUILayout.Label(player.playerStatistic.deaths.ToString(), styleCell);
+        GUILayout.Label(player.playerStatistic.damage.ToString(), styleCell);
+        GUILayout.Label(player.playerStatistic.returns.ToString(), styleCell);
+        GUILayout.Label(player.playerStatistic.score.ToString(), styleCell);
         GUILayout.Label(player.ping.ToString(), styleCell);
         GUILayout.EndHorizontal();
     }

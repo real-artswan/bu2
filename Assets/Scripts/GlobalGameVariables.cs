@@ -12,8 +12,4 @@ public class GlobalGameVariables : MonoBehaviour
     public Texture2D cursorTargetHit;
     public bool splatterGround = true;
     public float terrainMarksLifeTime = 2;
-
-    public Material[] bloodMaterials;
-    public BloodMark bloodMarkPrefab;
-    public ExplosionMark explosionMarkPrefab;
 }
